@@ -1,7 +1,8 @@
 import os
 import time
-
+import uuid
 import cv2
+import math
 import matplotlib.pyplot as plt
 import random
 
@@ -9,6 +10,12 @@ import numpy as np
 
 from src.augmentation_utils import shear_image
 
+def is_overlap(existing_centers, new_center, min_distance=20):
+    for center in existing_centers:
+        distance = math.sqrt((center[0] - new_center[0])**2 + (center[1] - new_center[1])**2)
+        if distance < min_distance:
+            return True
+    return False
 
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
     # Load background image
@@ -57,10 +64,6 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     x = random.randint(0, max_x)
                     y = random.randint(0, max_y)
 
-                    # Overlay sign image onto the background
-                    overlay = background_image.copy()
-                    overlay[y:y + sign_image_resized.shape[0], x:x + sign_image_resized.shape[1]] = sign_image_resized
-
                     # Read label file to get bounding box coordinates
                     with open(sign_label_path, 'r') as f:
                         line = f.readline().strip()
@@ -77,27 +80,39 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     new_bb_width = int(width * sign_w * scale_factor)
                     new_bb_height = int(height * sign_h * scale_factor)
 
-                    break  # Break out of the loop once the sign image is successfully placed
+                    # Check if prev picture is in same location
+                    if i > 0:
+                        if is_overlap(coordinate_list, [new_bb_x_center,new_bb_y_center]):
+                            continue
 
+                    # Overlay sign image onto the background
+                    overlay = background_image.copy()
+                    overlay[y:y + sign_image_resized.shape[0], x:x + sign_image_resized.shape[1]] = sign_image_resized
+
+                    label_coordinates = f"{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n"
+                    coordinate_list.append([new_bb_x_center,new_bb_y_center])
+
+                    break  # Break out of the loop once the sign image is successfully placed
+            background_image = overlay.copy()
     # TODO: write out from the txt file which class the sign belongs to
 
     # Save the overlay image
-    cv2.imwrite(os.path.join(output_path, os.path.basename(sign_image_path)),
-                cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR))
+    my_uuid = uuid.uuid4()
+    cv2.imwrite(os.path.join(output_path,f"{my_uuid}.jpg"),cv2.cvtColor(background_image, cv2.COLOR_RGB2BGR))
 
     # Write the new label file with adjusted bounding box coordinates
-    with open(os.path.join(output_path, os.path.basename(sign_label_path)), 'w+') as f:
+    with open(os.path.join(output_path, f"{my_uuid}.txt"), 'w') as f:
         f.write(label_coordinates)
 
 
 if __name__ == '__main__':
-    background_folder_path = r"C:\Users\Marco\Downloads\val2017\val2017"
-    output_folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\augmented_dataset"
-    images_folder_path = r'C:\Users\Marco\dev\git\BV2-project\data\shorted_dataset\test'
+    background_folder_path = r"C:\Users\Benedikt Seeger\PycharmProjects\BV2\data\background\val2017"
+    output_folder_path = r"C:\Users\Benedikt Seeger\PycharmProjects\BV2\data\generated_ouput"
+    images_folder_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2\data\shorted_dataset\test'
 
-    number_of_data_samples = 20000
+    number_of_data_samples = 1
 
-    number_of_training_images = number_of_data_samples * 0.7
+    number_of_training_images = number_of_data_samples# * 0.7
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
