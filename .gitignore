@@ -154,6 +154,7 @@ cython_debug/
 
 .txt
 .png
+*.mp4
 
 data/augmented_dataset
 

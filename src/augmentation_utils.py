@@ -1,5 +1,25 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
+import tensorflow as tf
+
+
+def augment_image(image):
+    fig = plt.figure()
+    plt.subplot(1, 2, 1)
+    plt.title('Original image')
+    plt.imshow(image)
+
+    plt.subplot(1, 2, 2)
+    plt.title('Augmented image')
+    flipped = tf.image.flip_left_right(image)
+    plt.imshow(flipped)
+
+
+if __name__ == '__main__':
+    image_path = ''
+    image = cv2.imread(image_path)
+    augment_image(image)
 
 
 def shear_image(image, shear_range):
