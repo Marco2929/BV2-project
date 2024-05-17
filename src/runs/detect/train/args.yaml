@@ -1,8 +1,8 @@
 task: detect
 mode: train
-model: C:\Users\Marco\dev\git\BV2-project\yolov8n.pt
-data: \data\dataset\train.yaml
-epochs: 200
+model: C:\Users\Marco\dev\git\BV2-project\src\yolov8n.pt
+data: C:\Users\Marco\dev\git\BV2-project\data\train.yaml
+epochs: 400
 time: null
 patience: 50
 batch: 16
@@ -91,7 +91,7 @@ degrees: 0.0
 translate: 0.1
 scale: 0.5
 shear: 0.0
-perspective: 0.0
+perspective: 0.0001
 flipud: 0.0
 fliplr: 0.0
 bgr: 0.0

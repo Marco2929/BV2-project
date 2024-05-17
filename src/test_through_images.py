@@ -25,10 +25,10 @@ def predict_images_in_folder(folder_path, model):
 
 if __name__ == '__main__':
     # Path to the folder containing images
-    folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\dataset\test_images"
+    folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\test_images"
 
     # Initialize the YOLO model
-    model_path = r"C:\Users\Marco\dev\git\BV2-project\src\runs\detect\train13\weights\best.pt"
+    model_path = r"C:\Users\Marco\dev\git\BV2-project\src\runs\detect\train20\weights\best.pt"
     model = YOLO(model_path)
 
     # Call the function to predict images in the folder
