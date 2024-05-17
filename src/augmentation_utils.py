@@ -1,42 +1,33 @@
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
 import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def apply_shear(image, level=15):
+    array_inputs = tf.keras.preprocessing.image.img_to_array(image)
+
+    # Apply vertical shear
+    sheared_vertical = tf.keras.preprocessing.image.random_shear(array_inputs, level,
+                                                                 row_axis=0, col_axis=1,
+                                                                 channel_axis=2)
+
+    # Apply horizontal shear
+    sheared_horizontal = tf.keras.preprocessing.image.random_shear(sheared_vertical, level,
+                                                                   row_axis=1, col_axis=0,
+                                                                   channel_axis=2)
+
+    return tf.keras.preprocessing.image.array_to_img(sheared_horizontal)
 
 
 def augment_image(image):
-    fig = plt.figure()
-    plt.subplot(1, 2, 1)
-    plt.title('Original image')
-    plt.imshow(image)
 
-    plt.subplot(1, 2, 2)
-    plt.title('Augmented image')
-    flipped = tf.image.flip_left_right(image)
-    plt.imshow(flipped)
+    aug_image = tf.image.random_brightness(image, 0.2)
+    aug_image = tf.image.random_hue(aug_image, 0.1)
 
+    aug_image = apply_shear(aug_image)
 
-if __name__ == '__main__':
-    image_path = ''
-    image = cv2.imread(image_path)
-    augment_image(image)
-
-
-def shear_image(image, shear_range):
-    # Define the shear angle randomly within the specified range
-    shear_angle = np.random.uniform(-shear_range, shear_range)
-
-    # Get the image dimensions
-    rows, cols = image.shape[:2]
-
-    # Define the transformation matrix for shear
-    shear_matrix = np.array([[1, np.tan(np.radians(shear_angle)), 0],
-                             [0, 1, 0]])
-
-    # Apply the transformation using warpAffine
-    sheared_image = cv2.warpAffine(image, shear_matrix, (cols, rows), borderMode=cv2.BORDER_REFLECT_101)
-
-    return sheared_image
+    return aug_image
 
 
 def plot_bounding_box(image_path, label_path):

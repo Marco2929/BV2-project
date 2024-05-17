@@ -1,28 +1,17 @@
 import os
 import time
 import uuid
+import re
+
 import cv2
 import math
-import matplotlib.pyplot as plt
 import random
 
-import numpy as np
+from src.augmentation_utils import augment_image
 
-def shear_image(image, shear_range):
-    # Define the shear angle randomly within the specified range
-    shear_angle = np.random.uniform(-shear_range, shear_range)
 
-    # Get the image dimensions
-    rows, cols = image.shape[:2]
+# from src.augmentation_utils import augment_image
 
-    # Define the transformation matrix for shear
-    shear_matrix = np.array([[1, np.tan(np.radians(shear_angle)), 0],
-                             [0, 1, 0]])
-
-    # Apply the transformation using warpAffine
-    sheared_image = cv2.warpAffine(image, shear_matrix, (cols, rows), borderMode=cv2.BORDER_REFLECT_101)
-
-    return sheared_image
 
 def is_overlap(existing_centers, new_center, min_distance=200):
     for center in existing_centers:
@@ -32,18 +21,27 @@ def is_overlap(existing_centers, new_center, min_distance=200):
     return False
 
 
-def readin_yolo_coordinates_from_file(sign_label_path):
-    # Read label file to get bounding box coordinates
-    with open(sign_label_path, 'r') as f:
-        line = f.readline().strip()
-        data = line.split()
-        class_id = int(data[0])  # YOLO format class ID
-        x_center = float(data[1])  # Normalized x-coordinate of bounding box center
-        y_center = float(data[2])  # Normalized y-coordinate of bounding box center
-        width = float(data[3])  # Normalized width of the bounding box
-        height = float(data[4])  # Normalized height of the bounding box
+def generate_bounding_boxes(sign_image, sign_image_path):
+    pattern = re.compile(r'\\(\d+)(_?\d*)\.png$')
+    sign_class = pattern.search(sign_image_path)
+    sign_class = int(sign_class.group(1))
 
-    return class_id, x_center, y_center, width, height
+    sign_h, sign_w, _ = sign_image.shape
+
+    # Calculate the center coordinates
+    x_center = sign_w / 2
+    y_center = sign_h / 2
+
+    # Normalize the center coordinates
+    x_center_normalized = x_center / sign_w
+    y_center_normalized = y_center / sign_h
+
+    # Normalize the width and height
+    width_normalized = sign_w / sign_w
+    height_normalized = sign_h / sign_h
+
+    return sign_class, x_center_normalized, y_center_normalized, width_normalized, height_normalized
+
 
 
 def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor):
@@ -63,8 +61,6 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     background_image = cv2.resize(background_image, (1920, 1080))
     h_bg, w_bg, _ = background_image.shape
 
-    shear_range = 20
-
     loop_length = random.randint(2, 5)
 
     coordinate_list = []
@@ -74,14 +70,15 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     for i in range(loop_length):
         # Define name of new image and txt file
         sign_image_path = random.choice(sign_image_paths)
-        sign_label_path = sign_image_path.replace('.png', '.txt')
 
         # Load sign image and its corresponding label
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
 
-        sign_image = shear_image(sign_image, shear_range)
+        sign_image = cv2.resize(background_image, (150, 150))
 
-        sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+        sign_image = augment_image(sign_image)
+
+        # sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGB)  # Convert to RGB
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
@@ -105,10 +102,18 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     x = random.randint(0, max_x)
                     y = random.randint(0, max_y)
 
-                    class_id, x_center, y_center, width, height = readin_yolo_coordinates_from_file(sign_label_path)
 
+                    class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized,
+                                                                                          sign_image_path)
+
+                    # TODO: Check if this parameters are calculated correctly in the next step
                     new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height = resize_bounding_boxes(x, y,
-                                                    x_center, y_center, sign_w, sign_h, width, height, scale_factor)
+                                                                                                          x_center,
+                                                                                                          y_center,
+                                                                                                          sign_w,
+                                                                                                          sign_h, width,
+                                                                                                          height,
+                                                                                                          scale_factor)
 
                     # Check if prev picture is in same location
                     if i > 0:
@@ -140,7 +145,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 if __name__ == '__main__':
     background_folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\background\val2017"
     output_folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\augmented_dataset"
-    images_folder_path = r'C:\Users\Marco\dev\git\BV2-project\data\shorted_dataset\test'
+    images_folder_path = r'C:\Users\Marco\dev\git\BV2-project\data\basic_images'
 
     number_of_data_samples = 20000
 
