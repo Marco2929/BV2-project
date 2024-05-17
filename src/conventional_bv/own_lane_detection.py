@@ -5,11 +5,13 @@ import numpy as np
 video_path = r'C:\Users\Benedikt Seeger\Downloads\Vorfahrtsschild.mp4'
 cap = cv2.VideoCapture(video_path)
 
+
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
     cv2.fillPoly(mask, vertices, 255)
     masked_image = cv2.bitwise_and(img, mask)
     return masked_image
+
 
 def draw_lines(img, lines):
     if lines is None:
@@ -19,16 +21,20 @@ def draw_lines(img, lines):
 
     for line in lines:
         for x1, y1, x2, y2 in line:
-            slope = (y2 - y1) / (x2 - x1) if (x2 - x1) != 0 else float('inf')
-            if abs(slope) < 0.5:  # Skip nearly horizontal lines
-                continue
-            cv2.line(blank_image, (x1, y1), (x2, y2), (255, 0, 0), 4)
+            cv2.line(blank_image, (x1, y1), (x2, y2), (255, 0, 0), 10)
 
     img = cv2.addWeighted(img, 0.8, blank_image, 1, 0.0)
     return img
 
-def draw_roi(img, vertices):
-    cv2.polylines(img, [vertices], isClosed=True, color=(0, 255, 0), thickness=2)
+
+def draw_curve(img, poly_coeffs, color=(255, 0, 0), thickness=10):
+    height = img.shape[0]
+    y_vals = np.linspace(0, height - 1, height)
+    x_vals = np.polyval(poly_coeffs, y_vals)
+
+    pts = np.array([np.flipud(np.transpose(np.vstack([x_vals, y_vals])))])
+    cv2.polylines(img, np.int32([pts]), isClosed=False, color=color, thickness=thickness)
+
 
 def process_frame(frame):
     height, width = frame.shape[:2]
@@ -50,13 +56,31 @@ def process_frame(frame):
     canny_image = cv2.Canny(gray_image, 100, 200)
     cropped_image = region_of_interest(canny_image, region_of_interest_vertices)
 
-    lines = cv2.HoughLinesP(cropped_image, rho=2, theta=np.pi / 180, threshold=90, lines=np.array([]), minLineLength=90, maxLineGap=60)
+    # Detect lines using Hough Transform
+    lines = cv2.HoughLinesP(cropped_image, rho=3, theta=np.pi / 180, threshold=50, lines=np.array([]),
+                            minLineLength=100, maxLineGap=120)
+
+    # Draw straight lines
     frame_with_lines = draw_lines(frame, lines)
+
+    # Extract points for polynomial fitting
+    points = np.argwhere(cropped_image > 0)
+    if points.shape[0] > 0:
+        y_vals = points[:, 0]
+        x_vals = points[:, 1]
+        if len(x_vals) > 0 and len(y_vals) > 0:
+            poly_coeffs = np.polyfit(y_vals, x_vals, 2)
+            draw_curve(frame_with_lines, poly_coeffs)
 
     # Draw the ROI on the frame after processing
     draw_roi(frame_with_lines, region_of_interest_vertices)
 
     return frame_with_lines
+
+
+def draw_roi(img, vertices):
+    cv2.polylines(img, [vertices], isClosed=True, color=(0, 255, 0), thickness=2)
+
 
 # Output video
 output_path = r'C:\Users\Benedikt Seeger\Downloads\processed_Vorfahrtsschild.mp4'
