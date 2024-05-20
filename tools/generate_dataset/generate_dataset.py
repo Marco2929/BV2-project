@@ -4,6 +4,7 @@ import re
 import cv2
 import math
 import random
+import numpy as np
 
 from tools.generate_dataset.augmentation_utils import augment_image
 
@@ -49,6 +50,44 @@ def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, heigh
     return new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height
 
 
+def adjust_brightness(image, value):
+    # Überprüfen, ob das Bild einen Alpha-Kanal hat
+    if image.shape[2] == 4:
+        # Splitte das Bild in die BGR- und Alpha-Kanäle
+        bgr = image[:, :, :3]
+        alpha = image[:, :, 3]
+
+        # Konvertiere das BGR-Bild in den HSV-Farbraum
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+
+        # Splitte die Kanäle
+        h, s, v = cv2.split(hsv)
+
+        # Helligkeit (Value) anpassen
+        v = cv2.add(v, value)
+
+        # Limitiere die Werte auf den Bereich [0, 255]
+        v = np.clip(v, 0, 255)
+
+        # Mische die Kanäle wieder zusammen
+        final_hsv = cv2.merge((h, s, v))
+
+        # Konvertiere das Bild von HSV zurück nach BGR
+        bgr_adjusted = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+
+        # Füge den Alpha-Kanal wieder hinzu
+        adjusted_image = cv2.merge((bgr_adjusted, alpha))
+    else:
+        # Wenn das Bild keinen Alpha-Kanal hat, wie gehabt fortfahren
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+        v = cv2.add(v, value)
+        v = np.clip(v, 0, 255)
+        final_hsv = cv2.merge((h, s, v))
+        adjusted_image = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+
+    return adjusted_image
+
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
     # Load background image
     background_image = cv2.imread(background_image_path)
@@ -56,7 +95,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     background_image = cv2.resize(background_image, (1920, 1080))
     h_bg, w_bg, _ = background_image.shape
 
-    loop_length = random.randint(3, 8)
+    loop_length = random.randint(5, 10)
 
     coordinate_list = []
 
@@ -69,15 +108,17 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
         # Load sign image and its corresponding label
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
 
-        sign_image = cv2.resize(sign_image, (150, 150))
+        sign_image = cv2.resize(sign_image, (100, 100))
 
         sign_image = augment_image(sign_image)
+
+        sign_image = adjust_brightness(sign_image,50)
 
         sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGB
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
-        scale_factor = random.uniform(0.3, 2.5)  # Random scale factor between 1 and 5
+        scale_factor = random.uniform(0.7, 2)  # Random scale factor between 1 and 5
         sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
         # Place image
@@ -85,7 +126,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
             # Ensure sign image fits within the background
             if sign_image_resized.shape[0] > h_bg or sign_image_resized.shape[1] > w_bg:
                 # If resized image is too large, resize it again
-                scale_factor = random.uniform(0.3, 2.5)
+                scale_factor = random.uniform(0.7, 2)
                 sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
                 continue
@@ -172,7 +213,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 20
+    number_of_dataset_images = 10
 
     number_of_training_images = number_of_dataset_images * 0.7
 

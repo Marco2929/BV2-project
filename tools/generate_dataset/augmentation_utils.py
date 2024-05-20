@@ -1,3 +1,5 @@
+import random
+
 import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -29,24 +31,21 @@ def apply_shear(image, level=15):
 
     return opencv_image
 
-
 def augment_image(image):
 
-    aug_image = tf.image.random_brightness(image, 0.2)
+    aug_image = tf.image.random_brightness(image, 0.6)
+    aug_image = tf.image.random_contrast(aug_image, 0.7, 1.5)
     aug_image = tf.image.convert_image_dtype(aug_image, tf.float32)
 
     # Split the image into RGB and Alpha channels
-    rgb_image = image[:, :, :3]
-    alpha_channel = image[:, :, 3:]
+    rgb_image = aug_image[:, :, :3]
+    alpha_channel = aug_image[:, :, 3:]
 
     # Apply random hue adjustment to the RGB image
-    rgb_image = tf.image.random_hue(rgb_image, 0.1)
+    rgb_image = tf.image.random_hue(rgb_image, 0.05)
 
     # Recombine the adjusted RGB image with the Alpha channel
     aug_image = tf.concat([rgb_image, alpha_channel], axis=-1)
-
-    # Old way...
-    #aug_image = tf.image.random_hue(aug_image, 0.1)
 
     aug_image = apply_shear(aug_image)
 
