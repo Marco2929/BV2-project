@@ -3,7 +3,7 @@ import os
 import cv2
 import random
 
-from src.augmentation_utils import shear_image
+from tools.generate_dataset.augmentation_utils import shear_image
 
 
 def plot_bounding_box_on_background(background_image_path, sign_image_path, label_path, output_path):

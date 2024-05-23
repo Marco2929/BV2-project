@@ -1,13 +1,10 @@
 import os
-import time
 import uuid
 import re
 
 import cv2
 import math
 import random
-
-from src.augmentation_utils import augment_image
 
 
 # from src.augmentation_utils import augment_image
@@ -61,7 +58,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     background_image = cv2.resize(background_image, (1920, 1080))
     h_bg, w_bg, _ = background_image.shape
 
-    loop_length = random.randint(2, 5)
+    loop_length = random.randint(3, 8)
 
     coordinate_list = []
 
@@ -74,15 +71,15 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
         # Load sign image and its corresponding label
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
 
-        sign_image = cv2.resize(background_image, (150, 150))
+        sign_image = cv2.resize(sign_image, (150, 150))
 
-        sign_image = augment_image(sign_image)
+        #sign_image = augment_image(sign_image)
 
-        # sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+        sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGB
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
-        scale_factor = random.uniform(2, 5)  # Random scale factor between 1 and 5
+        scale_factor = random.uniform(0.3, 2.5)  # Random scale factor between 1 and 5
         sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
         # Place image
@@ -90,7 +87,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
             # Ensure sign image fits within the background
             if sign_image_resized.shape[0] > h_bg or sign_image_resized.shape[1] > w_bg:
                 # If resized image is too large, resize it again
-                scale_factor = random.uniform(2, 5)
+                scale_factor = random.uniform(0.3, 2.5)
                 sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
                 continue
@@ -120,9 +117,34 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                         if is_overlap(coordinate_list, [new_bb_x_center, new_bb_y_center]):
                             continue
 
+                    # Ensure the background image has 4 channels (RGBA)
+                    if background_image.shape[2] == 3:
+                        background_image = cv2.cvtColor(background_image, cv2.COLOR_RGB2RGBA)
+
+                    # Ensure the sign image has 4 channels (RGBA)
+                    if sign_image_resized.shape[2] == 3:
+                        sign_image_resized = cv2.cvtColor(sign_image_resized, cv2.COLOR_RGB2RGBA)
+
+                    # Extract the alpha channel from the sign image
+                    alpha_sign = sign_image_resized[:, :, 3] / 255.0
+                    alpha_background = 1.0 - alpha_sign
+
+                    # Define the region of interest (ROI) in the background image
+                    y1, y2 = y, y + sign_image_resized.shape[0]
+                    x1, x2 = x, x + sign_image_resized.shape[1]
+
+                    # Blend the images
+                    for c in range(0, 3):
+                        background_image[y1:y2, x1:x2, c] = (alpha_sign * sign_image_resized[:, :, c] +
+                                                             alpha_background * background_image[y1:y2, x1:x2, c])
+
+                    # If you want to keep the alpha channel in the result
+                    background_image[y1:y2, x1:x2, 3] = (alpha_sign * 255 +
+                                                         alpha_background * background_image[y1:y2, x1:x2, 3])
+
                     # Overlay sign image onto the background
                     overlay = background_image
-                    overlay[y:y + sign_image_resized.shape[0], x:x + sign_image_resized.shape[1]] = sign_image_resized
+                    #overlay[y:y + sign_image_resized.shape[0], x:x + sign_image_resized.shape[1]] = sign_image_resized
 
                     if label_coordinates:
                         label_coordinates = f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n"
@@ -135,7 +157,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
     # Save the overlay image
     my_uuid = uuid.uuid4()
-    cv2.imwrite(os.path.join(output_path, f"{my_uuid}.jpg"), cv2.cvtColor(background_image, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(os.path.join(output_path, f"{my_uuid}.jpg"), cv2.cvtColor(background_image, cv2.COLOR_RGBA2BGR))
 
     # Write the new label file with adjusted bounding box coordinates
     with open(os.path.join(output_path, f"{my_uuid}.txt"), 'w') as f:
@@ -143,13 +165,21 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
 
 if __name__ == '__main__':
-    background_folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\background\val2017"
-    output_folder_path = r"C:\Users\Marco\dev\git\BV2-project\data\augmented_dataset"
-    images_folder_path = r'C:\Users\Marco\dev\git\BV2-project\data\basic_images'
+    # background_folder_path = r"C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\data\background\val2017"
+    # output_folder_path = r"C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\data\augmented_dataset"
+    # images_folder_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\data\basic_images'
 
-    number_of_data_samples = 20000
+    # Define the base directory relative to your script location
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-    number_of_training_images = number_of_data_samples * 0.7
+    # Define relative paths
+    background_folder_path = os.path.join(base_dir, "data", "background", "val2017")
+    output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
+    images_folder_path = os.path.join(base_dir, "data", "basic_images")
+
+    number_of_data_samples = 20
+
+    number_of_training_images = number_of_data_samples * 1
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
