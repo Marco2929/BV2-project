@@ -14,37 +14,39 @@ names:
   6: Ende 80
   7: 100 kmh
   8: 120 kmh
-  9: Ueberholverbot
-  10: Ueberholverbot LKW
-  11: Einmalige Vorfahrt
-  12: Vorfahrtstrasse
-  13: Vorfahrt gewaehren
-  14: Stop
-  15: Verbot alle Fahrzeuge
-  16: Verbot LKW
-  17: Verbot Einfahrt
-  18: Gefahrenstelle
-  19: Kurve links
-  20: Kurve rechts
-  21: Doppelkurve links!
-  22: Unebene Fahrbahn
-  23: Rutschgefahr
-  24: Einseitig rechs verengt
-  25: Arbeitsstelle
-  26: Lichtzeichenanlage
-  27: Fußgaenger
-  28: Kinder
-  29: Radfahrer
-  30: Eisglaette
-  31: Wildwechsel
-  32: Ende Geschwindigkeit
-  33: Fahrt rechts
-  34: Fahrt links
-  35: Fahrt geradeaus
-  36: Fahrt geradeaus rechts
-  37: Fahrt geradeaus links
-  38: Fahrt rechts vorbei
-  39: Fahrt links vorbei
-  40: Kreisverkehr
-  41: Ende Ueberholverbot
-  42: Ende Ueberholverbot LKW
+  9: Ampel
+  10: Ueberholverbot
+  11: Ueberholverbot LKW
+  12: Einmalige Vorfahrt
+  13: Vorfahrtstrasse
+  14: Vorfahrt gewaehren
+  15: Stop
+  16: Verbot alle Fahrzeuge
+  17: Verbot LKW
+  18: Verbot Einfahrt
+  19: Gefahrenstelle
+  20: Kurve links
+  21: Kurve rechts
+  22: Doppelkurve links!
+  23: Unebene Fahrbahn
+  24: Rutschgefahr
+  25: Einseitig rechs verengt
+  26: Arbeitsstelle
+  27: Lichtzeichenanlage
+  28: Fußgaenger
+  29: Kinder
+  30: Radfahrer
+  31: Eisglaette
+  32: Wildwechsel
+  33: Ende Geschwindigkeit
+  34: Fahrt rechts
+  35: Fahrt links
+  36: Fahrt geradeaus
+  37: Fahrt geradeaus rechts
+  38: Fahrt geradeaus links
+  39: Fahrt rechts vorbei
+  40: Fahrt links vorbei
+  41: Kreisverkehr
+  42: Ende Ueberholverbot
+  43: Ende Ueberholverbot LKW
+  44: Ende 70
