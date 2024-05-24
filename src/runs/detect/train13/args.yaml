@@ -1,11 +1,11 @@
 task: detect
 mode: train
-model: C:\Users\Marco\dev\git\BV2-project\src\runs\detect\train12\weights\best.pt
-data: C:\Users\Marco\dev\git\BV2-project\data\dataset\train.yaml
-epochs: 200
+model: yolov8n.pt
+data: C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\data\train.yaml
+epochs: 400
 time: null
 patience: 50
-batch: 16
+batch: -1
 imgsz: 640
 save: true
 save_period: -1
@@ -103,4 +103,4 @@ erasing: 0.4
 crop_fraction: 1.0
 cfg: null
 tracker: botsort.yaml
-save_dir: runs\detect\train13
+save_dir: C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\runs\detect\train13

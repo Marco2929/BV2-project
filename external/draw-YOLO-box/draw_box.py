@@ -36,11 +36,11 @@ def draw_box_on_image(image_name, classes, colors, LABEL_FOLDER, RAW_IMAGE_FOLDE
     print(image_name)
     if image_name == '.DS_Store':
         return 0
-    image_path = os.path.join(RAW_IMAGE_FOLDER, '%s.jpg' %
+    image_path = os.path.join(RAW_IMAGE_FOLDER, '%s.png' %
                               (image_name))  # 本次原始图片jpg路径
 
     save_file_path = os.path.join(
-        OUTPUT_IMAGE_FOLDER, '%s.jpg' % (image_name))  # 本次保存图片jpg路径
+        OUTPUT_IMAGE_FOLDER, '%s.png' % (image_name))  # 本次保存图片jpg路径
 
     # flag_people_or_car_data = 0  #变量 代表类别
     source_file = open(txt_path) if os.path.exists(txt_path) else []
