@@ -60,5 +60,5 @@ def process_folder(folder_path):
                 resize_image_and_bboxes(image_path, txt_path, output_image_path, output_txt_path)
 
 # Specify the folder path containing the images and .txt files
-folder_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2_2\BV2-project\data\gtsdb'
+folder_path = r'C:\Users\Benedikt Seeger\Downloads\gtsdb'
 process_folder(folder_path)
