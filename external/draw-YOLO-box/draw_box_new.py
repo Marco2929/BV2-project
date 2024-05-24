@@ -4,15 +4,7 @@ import os
 
 
 def load_class_names(yaml_file_path):
-    """
-    Loads class names from a YAML file.
 
-    Args:
-    yaml_file_path (str): Path to the YAML file containing class names.
-
-    Returns:
-    dict: Dictionary mapping class numbers to class names.
-    """
     try:
         with open(yaml_file_path, 'r') as file:
             data = yaml.safe_load(file)
@@ -33,15 +25,7 @@ def load_class_names(yaml_file_path):
 
 
 def load_bounding_boxes(file_path):
-    """
-    Loads multiple bounding boxes from a file.
 
-    Args:
-    file_path (str): Path to the file containing bounding box coordinates in YOLO format.
-
-    Returns:
-    list: List of tuples with class number and bounding box (class_number, x_center, y_center, width, height).
-    """
     bounding_boxes = []
     try:
         with open(file_path, 'r') as file:
@@ -58,15 +42,7 @@ def load_bounding_boxes(file_path):
 
 
 def plot_bounding_boxes(image_path, bounding_boxes, class_names):
-    """
-    Plots multiple bounding boxes on the given image.
 
-    Args:
-    image_path (str): Path to the image file.
-    bounding_boxes (list): List of bounding boxes in YOLO format (class_number, x_center, y_center, width, height).
-                           The values should be normalized (between 0 and 1).
-    class_names (dict): Dictionary mapping class numbers to class names.
-    """
     if class_names is None:
         print("Error: Class names not loaded properly.")
         return
@@ -138,7 +114,7 @@ def process_folder(image_folder, bbox_folder, yaml_file_path):
 
 
 # Example usage
-image_folder = r'C:\Users\Benedikt Seeger\Downloads\gtsdb_new'
+image_folder = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2_2\BV2-project\data\gtsdb\resized'
 bbox_folder = image_folder
 yaml_file_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2_2\BV2-project\data\train.yaml'
 
