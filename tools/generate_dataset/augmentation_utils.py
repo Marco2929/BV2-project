@@ -34,7 +34,7 @@ def apply_shear(image, level=15):
 def augment_image(image):
 
     aug_image = tf.image.random_brightness(image, 0.6)
-    aug_image = tf.image.random_contrast(aug_image, 0.7, 1.5)
+    aug_image = tf.image.random_contrast(aug_image, 0.7, 1.4)
     aug_image = tf.image.convert_image_dtype(aug_image, tf.float32)
 
     # Split the image into RGB and Alpha channels
@@ -42,7 +42,7 @@ def augment_image(image):
     alpha_channel = aug_image[:, :, 3:]
 
     # Apply random hue adjustment to the RGB image
-    rgb_image = tf.image.random_hue(rgb_image, 0.05)
+    rgb_image = tf.image.random_hue(rgb_image, 0.06)
 
     # Recombine the adjusted RGB image with the Alpha channel
     aug_image = tf.concat([rgb_image, alpha_channel], axis=-1)

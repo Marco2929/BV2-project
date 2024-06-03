@@ -112,13 +112,13 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
         sign_image = augment_image(sign_image)
 
-        sign_image = adjust_brightness(sign_image,50)
+        sign_image = adjust_brightness(sign_image,60)
 
         sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGB
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
-        scale_factor = random.uniform(0.7, 2)  # Random scale factor between 1 and 5
+        scale_factor = random.uniform(0.4, 1.5)  # Random scale factor between 1 and 5
         sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
         # Place image
@@ -126,7 +126,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
             # Ensure sign image fits within the background
             if sign_image_resized.shape[0] > h_bg or sign_image_resized.shape[1] > w_bg:
                 # If resized image is too large, resize it again
-                scale_factor = random.uniform(0.7, 2)
+                scale_factor = random.uniform(0.4, 1.5)
                 sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
                 continue
@@ -213,9 +213,9 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 50000
+    number_of_dataset_images = 20000
 
-    number_of_training_images = number_of_dataset_images * 0.7
+    number_of_training_images = number_of_dataset_images * 0.8
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
