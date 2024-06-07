@@ -1,5 +1,3 @@
-import random
-
 import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -31,8 +29,8 @@ def apply_shear(image, level=15):
 
     return opencv_image
 
-def augment_image(image):
 
+def augment_image(image):
     aug_image = tf.image.random_brightness(image, 0.6)
     aug_image = tf.image.random_contrast(aug_image, 0.7, 1.4)
     aug_image = tf.image.convert_image_dtype(aug_image, tf.float32)
