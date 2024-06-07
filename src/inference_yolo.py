@@ -1,15 +1,25 @@
 from ultralytics import YOLO
 import cv2
 import concurrent.futures
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from speed_classification.speed_inference import run_speed_sign_classification
 
 
 def crop_image(image, box):
     cropped_image = image[int(box[0][1]):int(box[0][3]), int(box[0][0]):int(box[0][2])]
-
     return cropped_image
+
+
+def display_overlay(frame: cv2.Mat, detected_signs: Dict[str, float]):
+    overlay_text = "Erkannte Schilder:\n"
+    for sign, conf in detected_signs.items():
+        overlay_text += f"{sign}: {conf:.2f}\n"
+
+    y0, dy = 30, 30
+    for i, line in enumerate(overlay_text.split('\n')):
+        y = y0 + i * dy
+        cv2.putText(frame, line, (10, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
 
 class VideoProcessor:
@@ -43,30 +53,35 @@ class VideoProcessor:
             results = self.model.predict(img, conf=conf, save_txt=False)
         return results
 
-    def predict_and_detect(self, image: cv2.Mat, classes: List[int] = []) -> Tuple[cv2.Mat, List]:
+    def predict_and_detect(self, image: cv2.Mat, classes: List[int] = []) -> Tuple[cv2.Mat, List, Dict[str, float]]:
         image = cv2.resize(image, (self.resize_width, self.resize_height))
         results = self.predict(image, classes, self.conf_threshold)
+        detected_signs = {}
 
         for result in results:
             for box in result.boxes:
-                if result.names[int(box.cls[0])] == "120 kmh":
+                sign_name = result.names[int(box.cls[0])]
+                if sign_name == "120 kmh":
                     cropped_image = crop_image(image=image, box=box.xyxy.cpu().tolist())
                     speed_sign_name, speed_confidence = run_speed_sign_classification(cropped_image)
+                    detected_signs[speed_sign_name] = speed_confidence
                     cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
                                   (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 255, 0), 2)
                     cv2.putText(image, f"{speed_sign_name} {speed_confidence:.2f}",
                                 (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
                                 cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
                 else:
+                    detected_signs[sign_name] = box.conf[0]
                     cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
                                   (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 0, 255), 2)
-                    cv2.putText(image, f"{result.names[int(box.cls[0])]} {box.conf[0]:.2f}",
+                    cv2.putText(image, f"{sign_name} {box.conf[0]:.2f}",
                                 (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
                                 cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
-        return image, results
+        return image, results, detected_signs
 
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
-        result_frame, _ = self.predict_and_detect(frame)
+        result_frame, _, detected_signs = self.predict_and_detect(frame)
+        display_overlay(result_frame, detected_signs)
         return result_frame
 
     def run(self, skip_frames: int = 1):
