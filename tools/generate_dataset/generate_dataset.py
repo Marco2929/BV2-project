@@ -126,7 +126,8 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
-        scale_factor = random.uniform(0.4, 1.5)  # Random scale factor between 1 and 5
+        # scale_factor = random.uniform(0.4, 1.5)  # Random scale factor between 1 and 5
+        scale_factor = np.random.beta(a=2, b=5) * (1.7 - 0.4) + 0.4
         sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
         # Place image
