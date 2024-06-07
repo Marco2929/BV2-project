@@ -20,7 +20,9 @@ def is_overlap(existing_centers, new_center, min_distance=200):
 def generate_bounding_boxes(sign_image, sign_image_path):
     pattern = re.compile(r'\\(\d+)(_?\d*)\.png$')
     sign_class = pattern.search(sign_image_path)
-    sign_class = int(sign_class.group(1))
+
+    if is_word(sign_image_path) is True:
+        sign_class = int(sign_class.group(500))
 
     sign_h, sign_w, _ = sign_image.shape
 
@@ -221,7 +223,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 20000
+    number_of_dataset_images = 5
 
     number_of_training_images = number_of_dataset_images * 0.8
 
