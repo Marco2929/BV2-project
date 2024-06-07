@@ -2,6 +2,7 @@ import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 from tensorflow.keras.preprocessing.image import array_to_img
 
 
@@ -31,6 +32,9 @@ def apply_shear(image, level=15):
 
 
 def augment_image(image):
+    kernals = [1, 3, 5, 9, 11, 13, 15]
+    random_kernal = random.choice(kernals)
+    image = cv2.GaussianBlur(image, (random_kernal, random_kernal), 0)
     aug_image = tf.image.random_brightness(image, 0.6)
     aug_image = tf.image.random_contrast(aug_image, 0.7, 1.4)
     aug_image = tf.image.convert_image_dtype(aug_image, tf.float32)
