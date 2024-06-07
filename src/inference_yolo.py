@@ -2,7 +2,14 @@ from ultralytics import YOLO
 import cv2
 import concurrent.futures
 from typing import List, Tuple
+
 from speed_classification.speed_inference import run_speed_sign_classification
+
+
+def crop_image(image, box):
+    cropped_image = image[int(box[0][1]):int(box[0][3]), int(box[0][0]):int(box[0][2])]
+
+    return cropped_image
 
 
 class VideoProcessor:
@@ -36,29 +43,27 @@ class VideoProcessor:
             results = self.model.predict(img, conf=conf, save_txt=False)
         return results
 
-    def predict_and_detect(self, img: cv2.Mat, classes: List[int] = [], conf: float = None) -> Tuple[cv2.Mat, List]:
-        if conf is None:
-            conf = self.conf_threshold
-        img = cv2.resize(img, (self.resize_width, self.resize_height))
-        results = self.predict(img, classes, conf)
+    def predict_and_detect(self, image: cv2.Mat, classes: List[int] = []) -> Tuple[cv2.Mat, List]:
+        image = cv2.resize(image, (self.resize_width, self.resize_height))
+        results = self.predict(image, classes, self.conf_threshold)
 
         for result in results:
             for box in result.boxes:
-                if result.names[int(box.cls[0])] == "speed":
-                    cropped_image = 0
+                if result.names[int(box.cls[0])] == "120 kmh":
+                    cropped_image = crop_image(image=image, box=box.xyxy.cpu().tolist())
                     speed_sign_name, speed_confidence = run_speed_sign_classification(cropped_image)
-                    cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
                                   (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 255, 0), 2)
-                    cv2.putText(img, f"{speed_sign_name} {speed_confidence:.2f}",
-                                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
-                                cv2.FONT_HERSHEY_PLAIN, 1, (0, 255, 0), 1)
-                else:
-                    cv2.rectangle(img, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 0, 255), 2)
-                    cv2.putText(img, f"{result.names[int(box.cls[0])]} {box.conf[0]:.2f}",
+                    cv2.putText(image, f"{speed_sign_name} {speed_confidence:.2f}",
                                 (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
                                 cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
-        return img, results
+                else:
+                    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 0, 255), 2)
+                    cv2.putText(image, f"{result.names[int(box.cls[0])]} {box.conf[0]:.2f}",
+                                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                                cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+        return image, results
 
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
         result_frame, _ = self.predict_and_detect(frame)
@@ -94,7 +99,7 @@ class VideoProcessor:
 if __name__ == "__main__":
     # Define the source: 0 for webcam or the path to your video file
     video_path = r"C:\Users\Marco\dev\git\BV2-project\data\video\Schild Umgefahren.mp4"
-    model_path = r"C:\Users\Marco\dev\git\BV2-project\src\runs\detect\train21\weights\best.pt"
+    model_path = r"C:\Users\Marco\dev\git\BV2-project\results\detection\train21\weights\best.pt"
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
     processor.run()
