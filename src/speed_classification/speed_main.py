@@ -4,8 +4,7 @@ import cv2
 model = YOLO("yolov8n-cls.pt")  # load a pretrained model (recommended for training)
 
 if __name__ == '__main__':
-
-    model.train(data=r"C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\src\speed_classification\speed_data",
+    model.train(data=r"C:\Users\Marco\dev\git\BV2-project\data\speed_data",
                 epochs=100,
                 patience=50,
                 device=0,
@@ -13,6 +12,6 @@ if __name__ == '__main__':
                 degrees=0.5,
                 flipud=0.0,
                 perspective=0.0001,
-                project= r"C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\src\speed_classification",
-                batch=-1
+                project=r"C:\Users\Marco\dev\git\BV2-project\src\speed_classification",
+                batch=64
                 )
