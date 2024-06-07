@@ -8,16 +8,16 @@ names:
   0: Person
   1: Fahrrad
   2: Auto
-  3: 20 kmh
-  4: 30 kmh
-  5: 50 kmh
-  6: 60 kmh
-  7: 70 kmh
-  8: 80 kmh
+  3: Geschwindigkeit
+  4: Ende 70
+  5: Ende 80
+  6: Ende Ueberholverbot
+  7: Ende Ueberholverbot LKW
+  8: Kreisverkehr
   9: Ampel
-  10: 100 kmh
+  10: Fahrt rechts vorbei
   11: Stop
-  12: 120 kmh
+  12: Fahrt links vorbei
   13: Ueberholverbot
   14: Ueberholverbot LKW
   15: Einmalige Vorfahrt
@@ -46,10 +46,3 @@ names:
   38: Fahrt geradeaus
   39: Fahrt geradeaus rechts
   40: Fahrt geradeaus links
-  41: Fahrt rechts vorbei
-  42: Fahrt links vorbei
-  43: Kreisverkehr
-  44: Ende Ueberholverbot
-  45: Ende Ueberholverbot LKW
-  46: Ende 70
-  47: Ende 80
