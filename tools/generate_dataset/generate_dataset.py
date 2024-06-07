@@ -39,7 +39,6 @@ def generate_bounding_boxes(sign_image, sign_image_path):
     return sign_class, x_center_normalized, y_center_normalized, width_normalized, height_normalized
 
 
-
 def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor):
     # Calculate new bounding box coordinates considering the sign overlay
     new_bb_x_center = int(x + (x_center * sign_w * scale_factor))
@@ -88,6 +87,15 @@ def adjust_brightness(image, value):
 
     return adjusted_image
 
+
+def is_word(filename):
+    # Remove file extension if present
+    name = filename.split('.')[0]
+
+    # Check if the name contains only alphabetic characters
+    return name.isalpha()
+
+
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
     # Load background image
     background_image = cv2.imread(background_image_path)
@@ -112,7 +120,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
         sign_image = augment_image(sign_image)
 
-        sign_image = adjust_brightness(sign_image,60)
+        sign_image = adjust_brightness(sign_image, 60)
 
         sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGB
 
@@ -138,11 +146,9 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     x = random.randint(0, max_x)
                     y = random.randint(0, max_y)
 
-
                     class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized,
                                                                                           sign_image_path)
 
-                    # TODO: Check if this parameters are calculated correctly in the next step
                     new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height = resize_bounding_boxes(x, y,
                                                                                                           x_center,
                                                                                                           y_center,
@@ -183,13 +189,14 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
                     # Overlay sign image onto the background
                     overlay = background_image
-                    #overlay[y:y + sign_image_resized.shape[0], x:x + sign_image_resized.shape[1]] = sign_image_resized
-
-                    if label_coordinates:
-                        label_coordinates = f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n"
-                    else:
-                        label_coordinates = f"{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n"
-                    coordinate_list.append([new_bb_x_center, new_bb_y_center])
+                    if is_word(sign_image_path) is False:
+                        if label_coordinates:
+                            label_coordinates = (f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} "
+                                                 f"{new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n")
+                        else:
+                            label_coordinates = (f"{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} "
+                                                 f"{new_bb_width / w_bg} {new_bb_height / h_bg}\n")
+                        coordinate_list.append([new_bb_x_center, new_bb_y_center])
 
                     break
             background_image = overlay
