@@ -18,11 +18,10 @@ def is_overlap(existing_centers, new_center, min_distance=200):
 
 
 def generate_bounding_boxes(sign_image, sign_image_path):
-    pattern = re.compile(r'\\(\d+)(_?\d*)\.png$')
+    #pattern = re.compile(r'\\(\d+)(_?\d*)\.png$')
+    pattern = re.compile(r'\\(\d+)_?.*\.png$')
     sign_class = pattern.search(sign_image_path)
-
-    if is_word(sign_image_path) is True:
-        sign_class = int(sign_class.group(500))
+    sign_class = int(sign_class.group(1))
 
     sign_h, sign_w, _ = sign_image.shape
 
@@ -89,13 +88,10 @@ def adjust_brightness(image, value):
 
     return adjusted_image
 
-
-def is_word(filename):
-    # Remove file extension if present
-    name = filename.split('.')[0]
-
-    # Check if the name contains only alphabetic characters
-    return name.isalpha()
+def contains_500(sign_image_path):
+    pattern = re.compile(r'500')
+    match = pattern.search(sign_image_path)
+    return match is not None
 
 
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
@@ -192,7 +188,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
                     # Overlay sign image onto the background
                     overlay = background_image
-                    if is_word(sign_image_path) is False:
+                    if contains_500(sign_image_path) is False:
                         if label_coordinates:
                             label_coordinates = (f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} "
                                                  f"{new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n")
@@ -223,7 +219,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 20000
+    number_of_dataset_images = 20
 
     number_of_training_images = number_of_dataset_images * 0.8
 
