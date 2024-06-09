@@ -219,9 +219,9 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 4000
+    number_of_dataset_images = 20000
 
-    number_of_training_images = number_of_dataset_images * 0
+    number_of_training_images = number_of_dataset_images * 0.8
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
