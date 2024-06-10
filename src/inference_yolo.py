@@ -1,6 +1,7 @@
-from ultralytics import YOLO
+import os
 import cv2
 import concurrent.futures
+from ultralytics import YOLO
 from typing import List, Tuple, Dict
 
 from speed_classification.speed_inference import run_speed_sign_classification
@@ -112,9 +113,9 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    # Define the source: 0 for webcam or the path to your video file
-    video_path = r"C:\Users\Marco\dev\git\BV2-project\data\video\Schild Umgefahren.mp4"
-    model_path = r"C:\Users\Marco\dev\git\BV2-project\results\detection\train21\weights\best.pt"
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    video_path = os.path.join(base_dir, 'data', 'video', 'Schild Umgefahren.mp4')
+    model_path = os.path.join(base_dir, 'results', 'detection', 'train3', 'weights', 'best.pt')
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
     processor.run()
