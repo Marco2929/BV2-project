@@ -1,0 +1,48 @@
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: C:\Users\Marco\dev\git\BV2-project\data  # dataset root dir
+train: test
+val: validation
+
+# Classes (47 classes)
+names:
+  0: Person
+  1: Fahrrad
+  2: Auto
+  3: Geschwindigkeit
+  4: Ende 70
+  5: Ende 80
+  6: Ende Ueberholverbot
+  7: Ende Ueberholverbot LKW
+  8: Kreisverkehr
+  9: Ampel
+  10: Fahrt rechts vorbei
+  11: Stop
+  12: Fahrt links vorbei
+  13: Ueberholverbot
+  14: Ueberholverbot LKW
+  15: Einmalige Vorfahrt
+  16: Vorfahrtstrasse
+  17: Vorfahrt gewaehren
+  18: Verbot alle Fahrzeuge
+  19: Verbot LKW
+  20: Verbot Einfahrt
+  21: Gefahrenstelle
+  22: Kurve links
+  23: Kurve rechts
+  24: Doppelkurve links
+  25: Unebene Fahrbahn
+  26: Rutschgefahr
+  27: Einseitig rechts verengt
+  28: Arbeitsstelle
+  29: Lichtzeichenanlage
+  30: Fußgaenger
+  31: Kinder
+  32: Radfahrer
+  33: Eisglaette
+  34: Wildwechsel
+  35: Ende Geschwindigkeit
+  36: Fahrt rechts
+  37: Fahrt links
+  38: Fahrt geradeaus
+  39: Fahrt geradeaus rechts
+  40: Fahrt geradeaus links

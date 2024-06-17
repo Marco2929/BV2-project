@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Load the video file
-video_path = r'C:\Users\Benedikt Seeger\Downloads\Vorfahrtsschild.mp4'
+video_path = r'C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4'
 cap = cv2.VideoCapture(video_path)
 
 
@@ -83,7 +83,7 @@ def draw_roi(img, vertices):
 
 
 # Output video
-output_path = r'C:\Users\Benedikt Seeger\Downloads\processed_Vorfahrtsschild.mp4'
+output_path = r'C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4'
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 

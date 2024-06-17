@@ -2,14 +2,16 @@ import cv2
 import numpy as np
 
 # Load the video file
-video_path = r'C:\Users\Benedikt Seeger\Downloads\Vorfahrtsschild.mp4'
+video_path = r'C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4'
 cap = cv2.VideoCapture(video_path)
+
 
 def region_of_interest(img, vertices):
     mask = np.zeros_like(img)
     cv2.fillPoly(mask, vertices, 255)
     masked_image = cv2.bitwise_and(img, mask)
     return masked_image
+
 
 def draw_lines(img, lines):
     if lines is None:
@@ -27,8 +29,10 @@ def draw_lines(img, lines):
     img = cv2.addWeighted(img, 0.8, blank_image, 1, 0.0)
     return img
 
+
 def draw_roi(img, vertices):
     cv2.polylines(img, [vertices], isClosed=True, color=(0, 255, 0), thickness=2)
+
 
 def process_frame(frame):
     height, width = frame.shape[:2]
@@ -50,7 +54,8 @@ def process_frame(frame):
     canny_image = cv2.Canny(gray_image, 100, 200)
     cropped_image = region_of_interest(canny_image, region_of_interest_vertices)
 
-    lines = cv2.HoughLinesP(cropped_image, rho=2, theta=np.pi / 180, threshold=90, lines=np.array([]), minLineLength=90, maxLineGap=60)
+    lines = cv2.HoughLinesP(cropped_image, rho=2, theta=np.pi / 180, threshold=90, lines=np.array([]), minLineLength=90,
+                            maxLineGap=60)
     frame_with_lines = draw_lines(frame, lines)
 
     # Draw the ROI on the frame after processing
@@ -58,8 +63,9 @@ def process_frame(frame):
 
     return frame_with_lines
 
+
 # Output video
-output_path = r'C:\Users\Benedikt Seeger\Downloads\processed_Vorfahrtsschild.mp4'
+output_path = r'C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4'
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
 
