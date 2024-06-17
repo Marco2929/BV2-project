@@ -1,26 +1,38 @@
 import cv2
 import time
+
+import numpy as np
 from ultralytics import YOLO
 import concurrent.futures
 from typing import List, Tuple, Dict
+
+from ultralytics.engine.results import Boxes
+
 from speed_classification.speed_inference import run_speed_sign_classification
 
 
-def crop_image(image, box):
+def crop_image(image: np.ndarray, box: List) -> np.ndarray:
     cropped_image = image[int(box[0][1]):int(box[0][3]), int(box[0][0]):int(box[0][2])]
     return cropped_image
 
 
-def draw_rectangle(img, pt1, pt2, color, thickness):
-    points = [
-        pt1,
-        (pt2[0], pt1[1]),
-        pt2,
-        (pt1[0], pt2[1]),
-    ]
-    for i in range(4):
-        pt1, pt2 = points[i], points[(i + 1) % 4]
-        cv2.line(img, pt1, pt2, color, thickness)
+def draw_speed_sign_bboxes(detected_signs: Dict, box: Boxes, speed_sign_name: str, speed_confidence: float,
+                           image: np.ndarray):
+    detected_signs[speed_sign_name] = speed_confidence
+    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 255, 0), 2)
+    cv2.putText(image, f"{speed_sign_name} {speed_confidence:.2f}",
+                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+
+
+def draw_other_bboxes(detected_signs: Dict, box: Boxes, sign_name: str, image: np.ndarray):
+    detected_signs[sign_name] = box.conf[0]
+    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
+                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 0, 255), 2)
+    cv2.putText(image, f"{sign_name} {box.conf[0]:.2f}",
+                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
+                cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
 
 
 class VideoProcessor:
@@ -68,19 +80,10 @@ class VideoProcessor:
                 if sign_name == "Geschwindigkeit":
                     cropped_image = crop_image(image=image, box=box.xyxy.cpu().tolist())
                     speed_sign_name, speed_confidence = run_speed_sign_classification(cropped_image)
-                    detected_signs[speed_sign_name] = speed_confidence
-                    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 255, 0), 2)
-                    cv2.putText(image, f"{speed_sign_name} {speed_confidence:.2f}",
-                                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
-                                cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+                    draw_speed_sign_bboxes(detected_signs, box, speed_sign_name, speed_confidence, image)
+
                 else:
-                    detected_signs[sign_name] = box.conf[0]
-                    cv2.rectangle(image, (int(box.xyxy[0][0]), int(box.xyxy[0][1])),
-                                  (int(box.xyxy[0][2]), int(box.xyxy[0][3])), (0, 0, 255), 2)
-                    cv2.putText(image, f"{sign_name} {box.conf[0]:.2f}",
-                                (int(box.xyxy[0][0]), int(box.xyxy[0][1]) - 10),
-                                cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+                    draw_other_bboxes(detected_signs, box, sign_name, image)
         return image, results, detected_signs
 
     def update_sign_cache(self, new_sign: str):
@@ -93,34 +96,30 @@ class VideoProcessor:
         if len(self.sign_cache) > self.max_cache_size:
             self.sign_cache.pop()  # Remove the oldest sign (last in the list)
 
-    def display_overlay(self, frame: cv2.Mat, detected_signs: Dict[str, float]):
-        for sign, conf in detected_signs.items():
-            if sign in ["20", "30", "50", "60", "70", "90", "80", "100", "120"]:
-                self.current_speed_sign = sign
-            else:
-                self.update_sign_cache(sign)
+    def display_speed_sign(self, frame: cv2.Mat):
+        sign_image_path = fr"C:\Users\Marco\dev\git\BV2-project\src\frontend\image_utils\{self.current_speed_sign}.png"
+        sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
+        # Resize sign image if necessary
+        sign_height, sign_width = sign_image.shape[:2]
+        scale_factor = 0.1  # Adjust this factor as needed
+        sign_image = cv2.resize(sign_image, (int(sign_width * scale_factor), int(sign_height * scale_factor)))
 
-        if self.current_speed_sign:
-            sign_image_path = fr"C:\Users\Marco\dev\git\BV2-project\src\frontend\image_utils\{self.current_speed_sign}.png"
-            sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
-            # Resize sign image if necessary
-            sign_height, sign_width = sign_image.shape[:2]
-            scale_factor = 0.1  # Adjust this factor as needed
-            sign_image = cv2.resize(sign_image, (int(sign_width * scale_factor), int(sign_height * scale_factor)))
+        # Define position for the overlay (top-left corner)
+        x_offset, y_offset = 650, 443  # Adjust position as needed
 
-            # Define position for the overlay (top-left corner)
-            x_offset, y_offset = 650, 443  # Adjust position as needed
+        alpha_s = sign_image[:, :, 3] / 255.0
+        alpha_l = 1.0 - alpha_s
 
-            alpha_s = sign_image[:, :, 3] / 255.0
-            alpha_l = 1.0 - alpha_s
+        for c in range(0, 3):
+            frame[y_offset:y_offset + sign_image.shape[0], x_offset:x_offset + sign_image.shape[1], c] = (
+                    alpha_s * sign_image[:, :, c] +
+                    alpha_l * frame[y_offset:y_offset + sign_image.shape[0],
+                              x_offset:x_offset + sign_image.shape[1], c]
+            )
 
-            for c in range(0, 3):
-                frame[y_offset:y_offset + sign_image.shape[0], x_offset:x_offset + sign_image.shape[1], c] = (
-                        alpha_s * sign_image[:, :, c] +
-                        alpha_l * frame[y_offset:y_offset + sign_image.shape[0],
-                                  x_offset:x_offset + sign_image.shape[1], c]
-                )
+        return frame
 
+    def display_other_signs_and_frame(self, frame: cv2.Mat):
         # Draw rounded grey block at the bottom middle
         overlay_width = 400
         overlay_height = 70
@@ -161,9 +160,21 @@ class VideoProcessor:
 
             x_offset += sign_image.shape[1] + 10
 
+    def display_visuals(self, frame: cv2.Mat, detected_signs: Dict[str, float]):
+        for sign, conf in detected_signs.items():
+            if sign in ["20", "30", "50", "60", "70", "90", "80", "100", "120"]:
+                self.current_speed_sign = sign
+            else:
+                self.update_sign_cache(sign)
+
+        if self.current_speed_sign:
+            frame = self.display_speed_sign(frame)
+
+        self.display_other_signs_and_frame(frame)
+
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
         result_frame, _, detected_signs = self.predict_and_detect(frame)
-        self.display_overlay(result_frame, detected_signs)
+        self.display_visuals(result_frame, detected_signs)
         return result_frame
 
     def run(self, skip_frames: int = 1):
@@ -201,7 +212,7 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = r"C:\Users\Marco\dev\git\BV2-project\data\video\Schild Umgefahren.mp4"
+    video_path = r"C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4"
     model_path = r"C:\Users\Marco\dev\git\BV2-project\results\detection\train3\weights\best.pt"
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
