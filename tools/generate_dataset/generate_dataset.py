@@ -107,9 +107,18 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
     label_coordinates = None
 
+    custom_bias = np.ones(np.size(sign_image_paths))
+
+    speed_prob = 1/6
+    prio_prob = 2
+
+    custom_bias[42] = speed_prob      # 3
+    custom_bias[63:86] = speed_prob   # 3
+    custom_bias[12:16] = prio_prob    # 16
+
     for i in range(loop_length):
         # Define name of new image and txt file
-        sign_image_path = random.choice(sign_image_paths)
+        sign_image_path = random.choices(sign_image_paths, custom_bias,k=1)[0]
 
         # Load sign image and its corresponding label
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
@@ -219,7 +228,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 20000
+    number_of_dataset_images = 20
 
     number_of_training_images = number_of_dataset_images * 0.8
 
