@@ -96,7 +96,7 @@ class VideoProcessor:
 
     def predict_and_detect(self, image: cv2.Mat, classes=None) -> Tuple[cv2.Mat, List, Dict[str, float]]:
         """
-        TODO: Write your own
+        Run the bounding box drawing according to the predictions
 
         Args:
             image (cv2.Mat): The input image.
@@ -104,6 +104,12 @@ class VideoProcessor:
 
         Returns:
             Tuple[cv2.Mat, List, Dict[str, float]]: Processed image, prediction results, and detected signs.
+
+        This method performs the following steps:
+        1. Loads the results and extracts the bounding boxes.
+        2. Updates the label count.
+        3. When a label is detected three times, executes the bounding box drawing.
+        4. To display the speed sign, an extra classification model runs an inference on the cropped image.
         """
         if classes is None:
             classes = []
