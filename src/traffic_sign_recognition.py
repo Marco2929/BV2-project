@@ -1,3 +1,5 @@
+import os
+
 import cv2
 import time
 
@@ -12,8 +14,20 @@ from src.frontend.draw_bboxes import draw_other_bboxes, draw_speed_sign_bboxes
 from src.utils.count_labels import LabelCounter
 from src.utils.utils import speed_numbers
 
+abs_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+
 
 def crop_image(image: np.ndarray, box: List) -> np.ndarray:
+    """
+    Crop the image based on the bounding box coordinates.
+
+    Args:
+        image (np.ndarray): The input image.
+        box (List): The bounding box coordinates [x_min, y_min, x_max, y_max].
+
+    Returns:
+        np.ndarray: The cropped image.
+    """
     cropped_image = image[int(box[0][1]):int(box[0][3]), int(box[0][0]):int(box[0][2])]
     return cropped_image
 
@@ -21,6 +35,16 @@ def crop_image(image: np.ndarray, box: List) -> np.ndarray:
 class VideoProcessor:
     def __init__(self, video_file: str, model_path: str, resize_width: int = 1080, resize_height: int = 920,
                  conf_threshold: float = 0.5):
+        """
+        Initialize the VideoProcessor object.
+
+        Args:
+            video_file (str): Path to the video file.
+            model_path (str): Path to the YOLO model weights.
+            resize_width (int, optional): Width to resize the frames. Defaults to 1080.
+            resize_height (int, optional): Height to resize the frames. Defaults to 920.
+            conf_threshold (float, optional): Confidence threshold for YOLO predictions. Defaults to 0.5.
+        """
         self.video_file = video_file
         self.model_path = model_path
         self.resize_width = resize_width
@@ -34,6 +58,9 @@ class VideoProcessor:
         self.label_counter = None
 
     def initialize_video_capture(self):
+        """
+        Initialize video capture from the video file and adjust frame size.
+        """
         self.cap = cv2.VideoCapture(self.video_file)
         frame_width = int(self.cap.get(3))
         frame_height = int(self.cap.get(4))
@@ -41,9 +68,23 @@ class VideoProcessor:
             self.resize_height = int((self.resize_width / frame_width) * frame_height)
 
     def load_yolo_model(self):
+        """
+        Load the YOLO model from the specified model path.
+        """
         self.model = YOLO(self.model_path)
 
     def predict(self, image: cv2.Mat, classes: List[int], conf: float = None):
+        """
+        Run YOLO model prediction on the image.
+
+        Args:
+            image (cv2.Mat): The input image.
+            classes (List[int]): List of class IDs to detect.
+            conf (float, optional): Confidence threshold for detection. Defaults to None.
+
+        Returns:
+            List: Prediction results.
+        """
         if conf is None:
             conf = self.conf_threshold
         image = cv2.resize(image, (self.resize_width, self.resize_height))
@@ -54,6 +95,16 @@ class VideoProcessor:
         return results
 
     def predict_and_detect(self, image: cv2.Mat, classes=None) -> Tuple[cv2.Mat, List, Dict[str, float]]:
+        """
+        TODO: Write your own
+
+        Args:
+            image (cv2.Mat): The input image.
+            classes (List[int], optional): List of class IDs to detect. Defaults to None.
+
+        Returns:
+            Tuple[cv2.Mat, List, Dict[str, float]]: Processed image, prediction results, and detected signs.
+        """
         if classes is None:
             classes = []
         image = cv2.resize(image, (self.resize_width, self.resize_height))
@@ -67,7 +118,8 @@ class VideoProcessor:
                 if self.label_counter.check_label_count(label=sign_name):
                     if sign_name == "Geschwindigkeit":
                         cropped_image = crop_image(image=image, box=box.xyxy.cpu().tolist())
-                        speed_sign_name, speed_confidence = run_speed_sign_classification(image=cropped_image)
+                        speed_sign_name, speed_confidence = run_speed_sign_classification(image=cropped_image,
+                                                                                          model_path=abs_dir)
                         draw_speed_sign_bboxes(detected_signs=detected_signs, box=box, speed_sign_name=speed_sign_name,
                                                speed_confidence=speed_confidence, image=image)
                     else:
@@ -75,6 +127,12 @@ class VideoProcessor:
         return image, results, detected_signs
 
     def update_display_sign_cache(self, new_sign: str):
+        """
+        Update the display cache with a new detected sign and make sure that the number never exceeds 6
+
+        Args:
+            new_sign (str): The new sign to add to the cache.
+        """
         # Avoid adding duplicate signs by removing it if it exists
         if new_sign in self.display_sign_cache:
             self.display_sign_cache.remove(new_sign)
@@ -85,6 +143,14 @@ class VideoProcessor:
             self.display_sign_cache.pop()  # Remove the oldest sign (last in the list)
 
     def display_visuals(self, frame: cv2.Mat, detected_signs: Dict[str, float]):
+        """
+        Display current speed sign and update if a new one was detected.
+        Display the other speed signs and the frame around them
+
+        Args:
+            frame (cv2.Mat): The frame to display visuals on.
+            detected_signs (Dict[str, float]): Dictionary of detected signs and their confidences.
+        """
         for sign, conf in detected_signs.items():
             if sign in speed_numbers:
                 self.current_speed_sign = sign
@@ -97,14 +163,43 @@ class VideoProcessor:
         display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache)
 
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
+        """
+        Process a single video frame using the YOLO model to detect objects and display visuals.
+
+        Args:
+            frame (cv2.Mat): The video frame to be processed.
+
+        Returns:
+            cv2.Mat: The processed video frame with object detection annotations and visual displays.
+
+        This method performs the following steps:
+        1. It calls the `predict_and_detect` method to run the YOLO model on the provided frame, obtaining the result frame,
+           detection results, and detected signs.
+        2. It displays additional visual information on the frame using the `display_visuals` method, which includes the detected signs.
+        3. It returns the result frame with all the annotations and visual information.
+
+        The processed frame is displayed in real-time during the video processing loop, providing visual feedback on detected objects.
+        """
         result_frame, _, detected_signs = self.predict_and_detect(frame)
         self.display_visuals(frame=result_frame, detected_signs=detected_signs)
         return result_frame
 
     def run(self):
+        """
+        Run the main video processing loop.
+
+        This method initializes video capture, loads the YOLO model, and processes video frames in a loop. It uses a
+        ThreadPoolExecutor to handle frame processing asynchronously. The processing time for each frame is printed,
+        and the processed frames are displayed in a window. Introduce label counter to count the number of detections
+        per sign, this avoids false detections and reset the counter after 4 frames again.
+
+        The loop terminates when the video capture ends or when the 'q' key is pressed. Resources are released properly
+        at the end of the method.
+        """
         self.initialize_video_capture()
         self.load_yolo_model()
         frame_count = 0
+        # Label counter to count the number of detection per sign
         self.label_counter = LabelCounter()
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -113,12 +208,13 @@ class VideoProcessor:
                 if not ret:
                     break
                 frame_count += 1
+
+                # reset the counter after 4 frames again
                 if frame_count % 4 == 0:
-                    self.label_counter = LabelCounter()
+                    self.label_counter.reset_all_counts()
 
                 start_time = time.time()
 
-                # Submit the frame for processing
                 future = executor.submit(self.process_frame, frame)
                 result_frame = future.result()
 
@@ -137,8 +233,8 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = r"C:\Users\Marco\dev\git\BV2-project\data\video\Verrücktes Überholmanöver Neben Polizei.mp4"
-    model_path = r"C:\Users\Marco\dev\git\BV2-project\results\detection\train3\weights\best.pt"
+    video_path = os.path.join(abs_dir, "data/video/Verrücktes Überholmanöver Neben Polizei.mp4")
+    model_path = os.path.join(abs_dir, "results/detection/train/train3/weights/best.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
     processor.run()

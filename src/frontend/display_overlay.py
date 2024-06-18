@@ -4,15 +4,24 @@ import cv2
 
 
 def display_speed_sign(frame: cv2.Mat, current_speed_sign: str):
+    """
+    Overlays the current speed sign image onto the provided video frame.
+
+    Args:
+        frame (cv2.Mat): The input video frame on which the speed sign will be displayed.
+        current_speed_sign (str): The name of the speed sign image file (without the extension) to be displayed.
+
+    Returns:
+        cv2.Mat: The video frame with the speed sign image overlay.
+    """
     sign_image_path = fr"C:\Users\Marco\dev\git\BV2-project\src\frontend\image_utils\{current_speed_sign}.png"
     sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
-    # Resize sign image if necessary
     sign_height, sign_width = sign_image.shape[:2]
-    scale_factor = 0.1  # Adjust this factor as needed
+    scale_factor = 0.1
     sign_image = cv2.resize(sign_image, (int(sign_width * scale_factor), int(sign_height * scale_factor)))
 
     # Define position for the overlay (top-left corner)
-    x_offset, y_offset = 650, 443  # Adjust position as needed
+    x_offset, y_offset = 650, 443
 
     alpha_s = sign_image[:, :, 3] / 255.0
     alpha_l = 1.0 - alpha_s
@@ -28,6 +37,13 @@ def display_speed_sign(frame: cv2.Mat, current_speed_sign: str):
 
 
 def display_other_signs_and_frame(frame: cv2.Mat, display_sign_cache: List):
+    """
+    Draws a rounded grey block at the bottom middle of the frame and displays cached sign images within the block.
+
+    Args:
+        frame (cv2.Mat): The input video frame on which the grey block and cached sign images will be displayed.
+        display_sign_cache (List[str]): A list of sign image filenames (without the extension) to be displayed in the grey block.
+    """
     # Draw rounded grey block at the bottom middle
     overlay_width = 400
     overlay_height = 70
