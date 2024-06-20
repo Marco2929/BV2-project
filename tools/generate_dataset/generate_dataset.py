@@ -9,10 +9,12 @@ import numpy as np
 
 from tools.generate_dataset.augmentation_utils import augment_image
 
-def copy_file_pairs(src_folder, dst_folder):
-    # Ensure destination folder exists
-    if not os.path.exists(dst_folder):
-        os.makedirs(dst_folder)
+def copy_file_pairs(src_folder, dst_folder1, dst_folder2, percentage):
+    # Ensure destination folders exist
+    if not os.path.exists(dst_folder1):
+        os.makedirs(dst_folder1)
+    if not os.path.exists(dst_folder2):
+        os.makedirs(dst_folder2)
 
     # Get list of all files in the source folder
     files = os.listdir(src_folder)
@@ -21,30 +23,54 @@ def copy_file_pairs(src_folder, dst_folder):
     pairs = {}
     for file in files:
         name, ext = os.path.splitext(file)
-        if ext in ['.txt', '.png']:
+        if ext in ['.txt', '.jpg']:
             if name not in pairs:
                 pairs[name] = {}
             pairs[name][ext] = file
 
-    # Copy only pairs
+    # Filter out only pairs
+    pair_list = [exts for exts in pairs.values() if '.txt' in exts and '.jpg' in exts]
+
+    # Shuffle the list to ensure random distribution
+    random.shuffle(pair_list)
+
+    # Calculate the number of pairs to copy to each folder
+    total_pairs = len(pair_list)
+    num_pairs_dst1 = int(total_pairs * (percentage / 100))
+    num_pairs_dst2 = total_pairs - num_pairs_dst1
+
+    # Copy files to dst_folder1
     copied_files = 0
-    for name, exts in pairs.items():
-        if '.txt' in exts and '.png' in exts:
-            txt_file = exts['.txt']
-            png_file = exts['.png']
+    for exts in pair_list[:num_pairs_dst1]:
+        txt_file = exts['.txt']
+        png_file = exts['.jpg']
 
-            src_txt = os.path.join(src_folder, txt_file)
-            dst_txt = os.path.join(dst_folder, txt_file)
-            src_png = os.path.join(src_folder, png_file)
-            dst_png = os.path.join(dst_folder, png_file)
+        src_txt = os.path.join(src_folder, txt_file)
+        dst_txt = os.path.join(dst_folder1, txt_file)
+        src_png = os.path.join(src_folder, png_file)
+        dst_png = os.path.join(dst_folder1, png_file)
 
-            shutil.copy(src_txt, dst_txt)
-            shutil.copy(src_png, dst_png)
+        shutil.copy(src_txt, dst_txt)
+        shutil.copy(src_png, dst_png)
 
-            copied_files += 2
+        copied_files += 2
 
-            if copied_files >= 200:
-                break
+    # Copy files to dst_folder2
+    for exts in pair_list[num_pairs_dst2:]:
+        txt_file = exts['.txt']
+        png_file = exts['.jpg']
+
+        src_txt = os.path.join(src_folder, txt_file)
+        dst_txt = os.path.join(dst_folder2, txt_file)
+        src_png = os.path.join(src_folder, png_file)
+        dst_png = os.path.join(dst_folder2, png_file)
+
+        shutil.copy(src_txt, dst_txt)
+        shutil.copy(src_png, dst_png)
+
+        copied_files += 2
+
+    print(f"Copied {copied_files} files in total: {num_pairs_dst1 * 2} to {dst_folder1}, {num_pairs_dst2 * 2} to {dst_folder2}")
 
 
 
@@ -272,16 +298,19 @@ if __name__ == '__main__':
     coco_stop_sign_path = os.path.join(base_dir, "data", "coco_selection", "stop_sign")
     coco_traffic_light_path = os.path.join(base_dir, "data", "coco_selection", "traffic_light")
 
-    copy_file_pairs('coco_car_path', 'output_folder_path')
-    copy_file_pairs('coco_person_path', 'output_folder_path')
-    copy_file_pairs('coco_stop_sign_path', 'output_folder_path')
-    copy_file_pairs('coco_traffic_light_path', 'output_folder_path')
+    output_folder_path_test = os.path.join(output_folder_path, "test")
+    output_folder_path_train = os.path.join(output_folder_path, "train")
+
+    split_percent = 0.8
+
+    #copy_file_pairs(coco_car_path, output_folder_path_test,output_folder_path_train,split_percent*100)
+    #copy_file_pairs(coco_person_path, 'output_folder_path_test','output_folder_path_train',split_percent*100)
+    #copy_file_pairs(coco_stop_sign_path, 'output_folder_path_test','output_folder_path_train',split_percent*100)
+    #copy_file_pairs(coco_traffic_light_path, 'output_folder_path_test','output_folder_path_train',split_percent*100)
 
     number_of_dataset_images = 20
 
-    -> Aufteilung in train and test!
-
-    number_of_training_images = number_of_dataset_images * 0.8
+    number_of_training_images = number_of_dataset_images * split_percent
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
