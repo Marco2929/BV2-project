@@ -4,9 +4,48 @@ import re
 import cv2
 import math
 import random
+import shutil
 import numpy as np
 
 from tools.generate_dataset.augmentation_utils import augment_image
+
+def copy_file_pairs(src_folder, dst_folder):
+    # Ensure destination folder exists
+    if not os.path.exists(dst_folder):
+        os.makedirs(dst_folder)
+
+    # Get list of all files in the source folder
+    files = os.listdir(src_folder)
+
+    # Collect pairs of files
+    pairs = {}
+    for file in files:
+        name, ext = os.path.splitext(file)
+        if ext in ['.txt', '.png']:
+            if name not in pairs:
+                pairs[name] = {}
+            pairs[name][ext] = file
+
+    # Copy only pairs
+    copied_files = 0
+    for name, exts in pairs.items():
+        if '.txt' in exts and '.png' in exts:
+            txt_file = exts['.txt']
+            png_file = exts['.png']
+
+            src_txt = os.path.join(src_folder, txt_file)
+            dst_txt = os.path.join(dst_folder, txt_file)
+            src_png = os.path.join(src_folder, png_file)
+            dst_png = os.path.join(dst_folder, png_file)
+
+            shutil.copy(src_txt, dst_txt)
+            shutil.copy(src_png, dst_png)
+
+            copied_files += 2
+
+            if copied_files >= 200:
+                break
+
 
 
 def is_overlap(existing_centers, new_center, min_distance=200):
@@ -228,7 +267,19 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
+    coco_car_path = os.path.join(base_dir, "data", "coco_selection", "car")
+    coco_person_path = os.path.join(base_dir, "data", "coco_selection", "person")
+    coco_stop_sign_path = os.path.join(base_dir, "data", "coco_selection", "stop_sign")
+    coco_traffic_light_path = os.path.join(base_dir, "data", "coco_selection", "traffic_light")
+
+    copy_file_pairs('coco_car_path', 'output_folder_path')
+    copy_file_pairs('coco_person_path', 'output_folder_path')
+    copy_file_pairs('coco_stop_sign_path', 'output_folder_path')
+    copy_file_pairs('coco_traffic_light_path', 'output_folder_path')
+
     number_of_dataset_images = 20
+
+    -> Aufteilung in train and test!
 
     number_of_training_images = number_of_dataset_images * 0.8
 
