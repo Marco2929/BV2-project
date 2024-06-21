@@ -7,15 +7,15 @@ mapping = {
     1: 1,
     2: 2,
     3: 3,
-    4: 3,
-    5: 3,
-    6: 3,
-    7: 3,
-    8: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
     9: 9,
-    10: 3,
+    10: 12,
     11: 11,
-    12: 3,
+    12: 10,
     13: 13,
     14: 14,
     15: 15,
@@ -44,14 +44,14 @@ mapping = {
     38: 38,
     39: 39,
     40: 40,
-    41: 10,
-    42: 12,
-    43: 8,
-    44: 6,
-    45: 7,
-    46: 4,
-    47: 5,
-    48: 500,
+    41: 41,
+    42: 42,
+    43: 43,
+    44: 44,
+    45: 45,
+    46: 46,
+    47: 47,
+    500: 500,
 }
 
 def modify_first_number(file_path, mapping):
@@ -74,7 +74,7 @@ def modify_first_number(file_path, mapping):
         file.writelines(modified_lines)
 
 # Specify the directory containing the .txt files
-directory = r'C:\Users\Benedikt Seeger\Downloads\gtsdb'
+directory = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\data\gtsdb'
 
 # Iterate over each file in the directory
 for filename in os.listdir(directory):
