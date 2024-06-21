@@ -1,8 +1,9 @@
 from ultralytics import YOLO
+import os
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 data_path = os.path.join(base_dir, 'data', 'train.yaml')
-output_path = os.path.join(base_dir, 'results', 'detection')
+output_path = os.path.join(base_dir, 'results', 'detection', 'train')
 
 model = YOLO()
 
