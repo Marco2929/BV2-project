@@ -121,7 +121,7 @@ class VideoProcessor:
             for box in result.boxes:
                 sign_name = result.names[int(box.cls[0])]
                 self.label_counter.update_label_count(label=sign_name)
-                if self.label_counter.check_label_count(label=sign_name):
+                if self.label_counter.check_label_count(label=sign_name) and sign_name not in ["Ampel", "Fahrrad", "Person", "Auto"]:
                     if sign_name == "Geschwindigkeit":
                         cropped_image = crop_image(image=image, box=box.xyxy.cpu().tolist())
                         speed_sign_name, speed_confidence = run_speed_sign_classification(image=cropped_image,
@@ -130,6 +130,7 @@ class VideoProcessor:
                                                speed_confidence=speed_confidence, image=image)
                     else:
                         draw_other_bboxes(detected_signs=detected_signs, box=box, sign_name=sign_name, image=image)
+
         return image, results, detected_signs
 
     def update_display_sign_cache(self, new_sign: str):
@@ -166,7 +167,7 @@ class VideoProcessor:
         if self.current_speed_sign:
             frame = display_speed_sign(frame=frame, current_speed_sign=self.current_speed_sign)
 
-        display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache)
+        display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache, path=abs_dir)
 
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
         """
@@ -239,8 +240,8 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = os.path.join(abs_dir, "data/video/Verrücktes Überholmanöver Neben Polizei.mp4")
-    model_path = os.path.join(abs_dir, "results/detection/train/train3/weights/best.pt")
+    video_path = os.path.join(abs_dir, "data/video/6.mp4")
+    model_path = os.path.join(abs_dir, "results/detection/train/train4/weights/best.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
     processor.run()
