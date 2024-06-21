@@ -1,3 +1,4 @@
+import os.path
 from typing import List
 
 import cv2
@@ -36,13 +37,14 @@ def display_speed_sign(frame: cv2.Mat, current_speed_sign: str):
     return frame
 
 
-def display_other_signs_and_frame(frame: cv2.Mat, display_sign_cache: List):
+def display_other_signs_and_frame(frame: cv2.Mat, display_sign_cache: List, path: str):
     """
     Draws a rounded grey block at the bottom middle of the frame and displays cached sign images within the block.
 
     Args:
         frame (cv2.Mat): The input video frame on which the grey block and cached sign images will be displayed.
         display_sign_cache (List[str]): A list of sign image filenames (without the extension) to be displayed in the grey block.
+        path: (str) Path to the parent directory
     """
     # Draw rounded grey block at the bottom middle
     overlay_width = 400
@@ -57,7 +59,7 @@ def display_other_signs_and_frame(frame: cv2.Mat, display_sign_cache: List):
     y_offset = overlay_y + 10  # Starting y offset for the sign images
 
     for sign in display_sign_cache:
-        sign_image_path = fr"C:\Users\Marco\dev\git\BV2-project\src\frontend\image_utils\{sign}.png"
+        sign_image_path = os.path.join(path, fr"src\frontend\image_utils\{sign}.png")
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
         if sign_image is None:
             continue  # Skip if image not found

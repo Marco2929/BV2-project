@@ -166,7 +166,7 @@ class VideoProcessor:
         if self.current_speed_sign:
             frame = display_speed_sign(frame=frame, current_speed_sign=self.current_speed_sign)
 
-        display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache)
+        display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache, path=abs_dir)
 
     def process_frame(self, frame: cv2.Mat) -> cv2.Mat:
         """
@@ -239,7 +239,7 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = os.path.join(abs_dir, "data/video/Verrücktes Überholmanöver Neben Polizei.mp4")
+    video_path = os.path.join(abs_dir, "data/video/Heilbronn Nacht.mp4")
     model_path = os.path.join(abs_dir, "results/detection/train/train3/weights/best.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
