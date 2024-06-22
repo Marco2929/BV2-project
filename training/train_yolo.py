@@ -9,7 +9,7 @@ model = YOLO()
 
 if __name__ == '__main__':
     model.train(data=data_path,
-                epochs=200,
+                epochs=100,
                 patience=50,
                 project=output_path,
                 device=0,

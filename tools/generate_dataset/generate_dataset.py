@@ -109,7 +109,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
     custom_bias = np.ones(np.size(sign_image_paths))
 
-    speed_prob = 1/6
+    speed_prob = 1
     prio_prob = 2
 
     custom_bias[42] = speed_prob      # 3
@@ -228,7 +228,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 20000
+    number_of_dataset_images = 25000
 
     number_of_training_images = number_of_dataset_images * 0.7
 
