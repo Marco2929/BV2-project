@@ -4,18 +4,19 @@ from typing import List
 import cv2
 
 
-def display_speed_sign(frame: cv2.Mat, current_speed_sign: str):
+def display_speed_sign(frame: cv2.Mat, current_speed_sign: str, path: str):
     """
     Overlays the current speed sign image onto the provided video frame.
 
     Args:
         frame (cv2.Mat): The input video frame on which the speed sign will be displayed.
         current_speed_sign (str): The name of the speed sign image file (without the extension) to be displayed.
+        path (str): Path to the parent directory
 
     Returns:
         cv2.Mat: The video frame with the speed sign image overlay.
     """
-    sign_image_path = fr"C:\Users\Marco\dev\git\BV2-project\src\frontend\image_utils\{current_speed_sign}.png"
+    sign_image_path = os.path.join(path, fr"src\frontend\image_utils\{current_speed_sign}.png")
     sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
     sign_height, sign_width = sign_image.shape[:2]
     scale_factor = 0.1

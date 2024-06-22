@@ -165,7 +165,7 @@ class VideoProcessor:
                 self.update_display_sign_cache(new_sign=sign)
 
         if self.current_speed_sign:
-            frame = display_speed_sign(frame=frame, current_speed_sign=self.current_speed_sign)
+            frame = display_speed_sign(frame=frame, current_speed_sign=self.current_speed_sign, path=abs_dir)
 
         display_other_signs_and_frame(frame=frame, display_sign_cache=self.display_sign_cache, path=abs_dir)
 
@@ -240,7 +240,7 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = os.path.join(abs_dir, "data/video/6.mp4")
+    video_path = os.path.join(abs_dir, "data/video/2.mp4")
     model_path = os.path.join(abs_dir, "results/detection/train/train4/weights/best.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
