@@ -1,0 +1,13 @@
+1 -> gtsdb + 1,0k, 40E
+2 -> same
+3 -> gtsdb + 1,5k, 80E
+4 -> T3 + 1,0k + 20E -> Geschw. muss runter, blau mehr, blau Fußgänger noch dazu,
+5 -> gtsdb + 3k, neue weights, 120E
+6 -> T5 + 20E
+7 -> T4 + (T6 data) + 20E
+8 -> T7 + neue 3k kleiner + gtsdb test, 40E
+
+
+
+Train: 400 gtsdb + 3k-30%
+Test: 200 gtsdb + 3k-70%
