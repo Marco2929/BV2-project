@@ -240,8 +240,8 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = os.path.join(abs_dir, "data/video/3.mp4")
-    model_path = os.path.join(abs_dir, "results/detection/train/train4/weights/best.pt")
+    video_path = os.path.join(abs_dir, "data/video/6.mp4")
+    model_path = os.path.join(abs_dir, "models/detection_model.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)
     processor.run()

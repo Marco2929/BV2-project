@@ -8,6 +8,7 @@ import numpy as np
 
 from tools.generate_dataset.augmentation_utils import augment_image
 
+
 def is_overlap(existing_centers, new_center, min_distance=200):
     """
     Check if a new bounding box center overlaps with any existing bounding box centers.
@@ -25,6 +26,7 @@ def is_overlap(existing_centers, new_center, min_distance=200):
         if distance < min_distance:
             return True
     return False
+
 
 def generate_bounding_boxes(sign_image, sign_image_path):
     """
@@ -57,6 +59,7 @@ def generate_bounding_boxes(sign_image, sign_image_path):
 
     return sign_class, x_center_normalized, y_center_normalized, width_normalized, height_normalized
 
+
 def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor):
     """
     Resize bounding boxes based on the scaling factor.
@@ -81,6 +84,7 @@ def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, heigh
     new_bb_height = int(height * sign_h * scale_factor)
 
     return new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height
+
 
 def adjust_brightness(image, value):
     """
@@ -130,6 +134,7 @@ def adjust_brightness(image, value):
 
     return adjusted_image
 
+
 def contains_500(sign_image_path):
     """
     Check if the sign image path contains the number 500.
@@ -143,6 +148,7 @@ def contains_500(sign_image_path):
     pattern = re.compile(r'500')
     match = pattern.search(sign_image_path)
     return match is not None
+
 
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
     """
@@ -207,7 +213,8 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     x = random.randint(0, max_x)
                     y = random.randint(0, max_y)
 
-                    class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized, sign_image_path)
+                    class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized,
+                                                                                          sign_image_path)
                     new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height = resize_bounding_boxes(
                         x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor
                     )
@@ -235,14 +242,14 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     # Blend the images
                     for c in range(0, 3):
                         background_image[y1:y2, x1:x2, c] = (
-                            alpha_sign * sign_image_resized[:, :, c] +
-                            alpha_background * background_image[y1:y2, x1:x2, c]
+                                alpha_sign * sign_image_resized[:, :, c] +
+                                alpha_background * background_image[y1:y2, x1:x2, c]
                         )
 
                     # If you want to keep the alpha channel in the result
                     background_image[y1:y2, x1:x2, 3] = (
-                        alpha_sign * 255 +
-                        alpha_background * background_image[y1:y2, x1:x2, 3]
+                            alpha_sign * 255 +
+                            alpha_background * background_image[y1:y2, x1:x2, 3]
                     )
 
                     # Overlay sign image onto the background
@@ -271,6 +278,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     with open(os.path.join(output_path, f"{my_uuid}.txt"), 'w') as f:
         f.write(label_coordinates)
 
+
 if __name__ == '__main__':
     # Define the base directory relative to your script location
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -280,7 +288,7 @@ if __name__ == '__main__':
     output_folder_path = os.path.join(base_dir, "data", "augmented_dataset")
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
-    number_of_dataset_images = 25000
+    number_of_dataset_images = 100
     number_of_training_images = int(number_of_dataset_images * 0.7)
 
     # Get a list of all files in the folder

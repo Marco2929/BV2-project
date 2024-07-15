@@ -3,7 +3,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-from tensorflow.keras.preprocessing.image import array_to_img
+from keras_preprocessing.image import array_to_img
 
 
 def apply_shear(image, level=15):
