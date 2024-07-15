@@ -8,17 +8,35 @@ import numpy as np
 
 from tools.generate_dataset.augmentation_utils import augment_image
 
-
 def is_overlap(existing_centers, new_center, min_distance=200):
+    """
+    Check if a new bounding box center overlaps with any existing bounding box centers.
+
+    Args:
+        existing_centers (list): List of existing bounding box centers.
+        new_center (tuple): New bounding box center coordinates.
+        min_distance (int): Minimum allowed distance between centers.
+
+    Returns:
+        bool: True if overlap is detected, False otherwise.
+    """
     for center in existing_centers:
         distance = math.sqrt((center[0] - new_center[0]) ** 2 + (center[1] - new_center[1]) ** 2)
         if distance < min_distance:
             return True
     return False
 
-
 def generate_bounding_boxes(sign_image, sign_image_path):
-    #pattern = re.compile(r'\\(\d+)(_?\d*)\.png$')
+    """
+    Generate normalized bounding box coordinates for a given sign image.
+
+    Args:
+        sign_image (ndarray): The sign image.
+        sign_image_path (str): Path to the sign image.
+
+    Returns:
+        tuple: (sign_class, x_center_normalized, y_center_normalized, width_normalized, height_normalized)
+    """
     pattern = re.compile(r'\\(\d+)_?.*\.png$')
     sign_class = pattern.search(sign_image_path)
     sign_class = int(sign_class.group(1))
@@ -39,9 +57,24 @@ def generate_bounding_boxes(sign_image, sign_image_path):
 
     return sign_class, x_center_normalized, y_center_normalized, width_normalized, height_normalized
 
-
 def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor):
-    # Calculate new bounding box coordinates considering the sign overlay
+    """
+    Resize bounding boxes based on the scaling factor.
+
+    Args:
+        x (int): X coordinate.
+        y (int): Y coordinate.
+        x_center (float): Normalized x center.
+        y_center (float): Normalized y center.
+        sign_w (int): Sign width.
+        sign_h (int): Sign height.
+        width (float): Normalized width.
+        height (float): Normalized height.
+        scale_factor (float): Scaling factor.
+
+    Returns:
+        tuple: (new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height)
+    """
     new_bb_x_center = int(x + (x_center * sign_w * scale_factor))
     new_bb_y_center = int(y + (y_center * sign_h * scale_factor))
     new_bb_width = int(width * sign_w * scale_factor)
@@ -49,36 +82,45 @@ def resize_bounding_boxes(x, y, x_center, y_center, sign_w, sign_h, width, heigh
 
     return new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height
 
-
 def adjust_brightness(image, value):
-    # Überprüfen, ob das Bild einen Alpha-Kanal hat
+    """
+    Adjust the brightness of an image.
+
+    Args:
+        image (ndarray): Input image.
+        value (int): Brightness adjustment value.
+
+    Returns:
+        ndarray: Brightness adjusted image.
+    """
+    # Check if the image has an alpha channel
     if image.shape[2] == 4:
-        # Splitte das Bild in die BGR- und Alpha-Kanäle
+        # Split the image into BGR and alpha channels
         bgr = image[:, :, :3]
         alpha = image[:, :, 3]
 
-        # Konvertiere das BGR-Bild in den HSV-Farbraum
+        # Convert BGR image to HSV color space
         hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
 
-        # Splitte die Kanäle
+        # Split the channels
         h, s, v = cv2.split(hsv)
 
-        # Helligkeit (Value) anpassen
+        # Adjust brightness (Value)
         v = cv2.add(v, value)
 
-        # Limitiere die Werte auf den Bereich [0, 255]
+        # Limit values to [0, 255]
         v = np.clip(v, 0, 255)
 
-        # Mische die Kanäle wieder zusammen
+        # Merge the channels back together
         final_hsv = cv2.merge((h, s, v))
 
-        # Konvertiere das Bild von HSV zurück nach BGR
+        # Convert the image back from HSV to BGR
         bgr_adjusted = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
 
-        # Füge den Alpha-Kanal wieder hinzu
+        # Add the alpha channel back
         adjusted_image = cv2.merge((bgr_adjusted, alpha))
     else:
-        # Wenn das Bild keinen Alpha-Kanal hat, wie gehabt fortfahren
+        # If the image doesn't have an alpha channel, proceed as usual
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         h, s, v = cv2.split(hsv)
         v = cv2.add(v, value)
@@ -89,12 +131,31 @@ def adjust_brightness(image, value):
     return adjusted_image
 
 def contains_500(sign_image_path):
+    """
+    Check if the sign image path contains the number 500.
+
+    Args:
+        sign_image_path (str): Path to the sign image.
+
+    Returns:
+        bool: True if 500 is in the path, False otherwise.
+    """
     pattern = re.compile(r'500')
     match = pattern.search(sign_image_path)
     return match is not None
 
-
 def plot_bounding_box_on_background(background_image_path, sign_image_paths, output_path):
+    """
+    Plot bounding boxes on a background image and save the result.
+
+    Args:
+        background_image_path (str): Path to the background image.
+        sign_image_paths (list): List of sign image paths.
+        output_path (str): Output directory to save the result.
+
+    Returns:
+        None
+    """
     # Load background image
     background_image = cv2.imread(background_image_path)
     background_image = cv2.cvtColor(background_image, cv2.COLOR_BGR2RGB)
@@ -102,9 +163,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     h_bg, w_bg, _ = background_image.shape
 
     loop_length = random.randint(5, 10)
-
     coordinate_list = []
-
     label_coordinates = None
 
     custom_bias = np.ones(np.size(sign_image_paths))
@@ -112,28 +171,23 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     speed_prob = 1
     prio_prob = 2
 
-    custom_bias[42] = speed_prob      # 3
-    custom_bias[63:86] = speed_prob   # 3
-    custom_bias[12:16] = prio_prob    # 16
+    custom_bias[42] = speed_prob  # 3
+    custom_bias[63:86] = speed_prob  # 3
+    custom_bias[12:16] = prio_prob  # 16
 
     for i in range(loop_length):
-        # Define name of new image and txt file
-        sign_image_path = random.choices(sign_image_paths, custom_bias,k=1)[0]
+        # Select a random sign image path with custom bias
+        sign_image_path = random.choices(sign_image_paths, custom_bias, k=1)[0]
 
         # Load sign image and its corresponding label
         sign_image = cv2.imread(sign_image_path, cv2.IMREAD_UNCHANGED)
-
         sign_image = cv2.resize(sign_image, (100, 100))
-
         sign_image = augment_image(sign_image)
-
         sign_image = adjust_brightness(sign_image, 60)
-
-        sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGB
+        sign_image = cv2.cvtColor(sign_image, cv2.COLOR_BGR2RGBA)  # Convert to RGBA
 
         # Randomly scale the sign image
         sign_h, sign_w, _ = sign_image.shape
-        # scale_factor = random.uniform(0.4, 1.5)  # Random scale factor between 1 and 5
         scale_factor = np.random.beta(a=2, b=5) * (1.7 - 0.4) + 0.4
         sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
 
@@ -144,7 +198,6 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                 # If resized image is too large, resize it again
                 scale_factor = random.uniform(0.4, 1.5)
                 sign_image_resized = cv2.resize(sign_image, (int(sign_w * scale_factor), int(sign_h * scale_factor)))
-
                 continue
             else:
                 # Randomly position the sign image on the background
@@ -154,21 +207,14 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
                     x = random.randint(0, max_x)
                     y = random.randint(0, max_y)
 
-                    class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized,
-                                                                                          sign_image_path)
+                    class_id, x_center, y_center, width, height = generate_bounding_boxes(sign_image_resized, sign_image_path)
+                    new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height = resize_bounding_boxes(
+                        x, y, x_center, y_center, sign_w, sign_h, width, height, scale_factor
+                    )
 
-                    new_bb_x_center, new_bb_y_center, new_bb_width, new_bb_height = resize_bounding_boxes(x, y,
-                                                                                                          x_center,
-                                                                                                          y_center,
-                                                                                                          sign_w,
-                                                                                                          sign_h, width,
-                                                                                                          height,
-                                                                                                          scale_factor)
-
-                    # Check if prev picture is in same location
-                    if i > 0:
-                        if is_overlap(coordinate_list, [new_bb_x_center, new_bb_y_center]):
-                            continue
+                    # Check if previous picture is in same location
+                    if i > 0 and is_overlap(coordinate_list, [new_bb_x_center, new_bb_y_center]):
+                        continue
 
                     # Ensure the background image has 4 channels (RGBA)
                     if background_image.shape[2] == 3:
@@ -188,22 +234,30 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
 
                     # Blend the images
                     for c in range(0, 3):
-                        background_image[y1:y2, x1:x2, c] = (alpha_sign * sign_image_resized[:, :, c] +
-                                                             alpha_background * background_image[y1:y2, x1:x2, c])
+                        background_image[y1:y2, x1:x2, c] = (
+                            alpha_sign * sign_image_resized[:, :, c] +
+                            alpha_background * background_image[y1:y2, x1:x2, c]
+                        )
 
                     # If you want to keep the alpha channel in the result
-                    background_image[y1:y2, x1:x2, 3] = (alpha_sign * 255 +
-                                                         alpha_background * background_image[y1:y2, x1:x2, 3])
+                    background_image[y1:y2, x1:x2, 3] = (
+                        alpha_sign * 255 +
+                        alpha_background * background_image[y1:y2, x1:x2, 3]
+                    )
 
                     # Overlay sign image onto the background
                     overlay = background_image
-                    if contains_500(sign_image_path) is False:
+                    if not contains_500(sign_image_path):
                         if label_coordinates:
-                            label_coordinates = (f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} "
-                                                 f"{new_bb_y_center / h_bg} {new_bb_width / w_bg} {new_bb_height / h_bg}\n")
+                            label_coordinates = (
+                                f"{label_coordinates}{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} "
+                                f"{new_bb_width / w_bg} {new_bb_height / h_bg}\n"
+                            )
                         else:
-                            label_coordinates = (f"{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} "
-                                                 f"{new_bb_width / w_bg} {new_bb_height / h_bg}\n")
+                            label_coordinates = (
+                                f"{class_id} {new_bb_x_center / w_bg} {new_bb_y_center / h_bg} "
+                                f"{new_bb_width / w_bg} {new_bb_height / h_bg}\n"
+                            )
                         coordinate_list.append([new_bb_x_center, new_bb_y_center])
 
                     break
@@ -217,9 +271,7 @@ def plot_bounding_box_on_background(background_image_path, sign_image_paths, out
     with open(os.path.join(output_path, f"{my_uuid}.txt"), 'w') as f:
         f.write(label_coordinates)
 
-
 if __name__ == '__main__':
-
     # Define the base directory relative to your script location
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -229,8 +281,7 @@ if __name__ == '__main__':
     images_folder_path = os.path.join(base_dir, "data", "basic_images")
 
     number_of_dataset_images = 25000
-
-    number_of_training_images = number_of_dataset_images * 0.7
+    number_of_training_images = int(number_of_dataset_images * 0.7)
 
     # Get a list of all files in the folder
     background_images_files_list = os.listdir(background_folder_path)
@@ -247,10 +298,14 @@ if __name__ == '__main__':
     for i in range(number_of_dataset_images):
         background_image_path = os.path.join(background_folder_path, random.choice(background_image_files))
         if i < number_of_training_images:
-            plot_bounding_box_on_background(background_image_path=background_image_path, sign_image_paths=image_files,
-                                            output_path=os.path.join(output_folder_path, "train"))
+            plot_bounding_box_on_background(
+                background_image_path=background_image_path, sign_image_paths=image_files,
+                output_path=os.path.join(output_folder_path, "train")
+            )
         else:
-            plot_bounding_box_on_background(background_image_path=background_image_path, sign_image_paths=image_files,
-                                            output_path=os.path.join(output_folder_path, "test"))
+            plot_bounding_box_on_background(
+                background_image_path=background_image_path, sign_image_paths=image_files,
+                output_path=os.path.join(output_folder_path, "test")
+            )
 
         print(f"Image {i} saved")

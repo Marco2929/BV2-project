@@ -69,8 +69,8 @@ def plot_bounding_boxes(image_folder, txt_folder):
         # Wait for user input to close the window and proceed to the next image
         input("Press Enter to continue to the next image...")
 
-
-# Example usage
-image_folder = './coco_selected_images_traffic_light'  # Relative path to the folder containing the images
-txt_folder = './coco_selected_annotations_traffic_light'  # Relative path to the folder containing the text files
-plot_bounding_boxes(image_folder, txt_folder)
+if __name__ == "__main__":
+    # Example usage
+    image_folder = './coco_selected_images_traffic_light'  # Relative path to the folder containing the images
+    txt_folder = './coco_selected_annotations_traffic_light'  # Relative path to the folder containing the text files
+    plot_bounding_boxes(image_folder, txt_folder)

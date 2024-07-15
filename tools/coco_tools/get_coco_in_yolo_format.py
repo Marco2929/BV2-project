@@ -16,38 +16,6 @@ def download_and_extract_coco(dataset_url, dataset_dir):
         zip_ref.extractall(dataset_dir)
     os.remove(dataset_zip_path)
 
-# Download annotations if not present
-annotations_dir = 'coco/annotations'
-if not os.path.exists(annotations_dir):
-    download_and_extract_coco(
-        'http://images.cocodataset.org/annotations/annotations_trainval2017.zip',
-        'coco'
-    )
-
-# Load COCO annotations
-coco = COCO(os.path.join(annotations_dir, 'instances_train2017.json'))
-
-# Define relevant classes
-relevant_classes = ['person']#'car', 'person', 'traffic light', 'stop sign']
-relevant_class_ids = coco.getCatIds(catNms=relevant_classes)
-
-# Create a mapping from COCO class id to YOLO class id
-coco_to_yolo_class = {id: i for i, id in enumerate(relevant_class_ids)}
-
-# Get image ids that contain the relevant classes
-image_ids = coco.getImgIds(catIds=relevant_class_ids)
-
-# Select a subset of 500 image ids
-selected_image_ids = image_ids[:500]
-
-# Download images if not present
-images_dir = 'coco/train2017'
-if not os.path.exists(images_dir):
-    download_and_extract_coco(
-        'http://images.cocodataset.org/zips/train2017.zip',
-        'coco'
-    )
-
 # Function to download images and save bounding boxes in YOLO format
 def download_coco_images_and_annotations(coco, image_ids, save_dir, annotations_dir):
     if not os.path.exists(save_dir):
@@ -78,5 +46,38 @@ def download_coco_images_and_annotations(coco, image_ids, save_dir, annotations_
                 yolo_class = coco_to_yolo_class[ann['category_id']]
                 f.write(f"{yolo_class} {x_center} {y_center} {width} {height}\n")
 
-# Download the selected images and annotations
-download_coco_images_and_annotations(coco, selected_image_ids, 'coco_selected_images_person', 'coco_selected_annotations_person')
+if __name__ == "__main__":
+    # Download annotations if not present
+    annotations_dir = 'coco/annotations'
+    if not os.path.exists(annotations_dir):
+        download_and_extract_coco(
+            'http://images.cocodataset.org/annotations/annotations_trainval2017.zip',
+            'coco'
+        )
+
+    # Load COCO annotations
+    coco = COCO(os.path.join(annotations_dir, 'instances_train2017.json'))
+
+    # Define relevant classes
+    relevant_classes = ['person']#'car', 'person', 'traffic light', 'stop sign']
+    relevant_class_ids = coco.getCatIds(catNms=relevant_classes)
+
+    # Create a mapping from COCO class id to YOLO class id
+    coco_to_yolo_class = {id: i for i, id in enumerate(relevant_class_ids)}
+
+    # Get image ids that contain the relevant classes
+    image_ids = coco.getImgIds(catIds=relevant_class_ids)
+
+    # Select a subset of 500 image ids
+    selected_image_ids = image_ids[:500]
+
+    # Download images if not present
+    images_dir = 'coco/train2017'
+    if not os.path.exists(images_dir):
+        download_and_extract_coco(
+            'http://images.cocodataset.org/zips/train2017.zip',
+            'coco'
+        )
+
+    # Download the selected images and annotations
+    download_coco_images_and_annotations(coco, selected_image_ids, 'coco_selected_images_person', 'coco_selected_annotations_person')

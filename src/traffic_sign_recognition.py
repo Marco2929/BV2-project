@@ -34,7 +34,7 @@ def crop_image(image: np.ndarray, box: List) -> np.ndarray:
 
 class VideoProcessor:
     def __init__(self, video_file: str, model_path: str, resize_width: int = 1080, resize_height: int = 920,
-                 conf_threshold: float = 0.5):
+                 conf_threshold: float = 0.75):
         """
         Initialize the VideoProcessor object.
 
@@ -240,7 +240,7 @@ class VideoProcessor:
 
 
 if __name__ == "__main__":
-    video_path = os.path.join(abs_dir, "data/video/2.mp4")
+    video_path = os.path.join(abs_dir, "data/video/3.mp4")
     model_path = os.path.join(abs_dir, "results/detection/train/train4/weights/best.pt")
 
     processor = VideoProcessor(video_file=video_path, model_path=model_path)

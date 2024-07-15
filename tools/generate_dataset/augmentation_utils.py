@@ -7,6 +7,16 @@ from tensorflow.keras.preprocessing.image import array_to_img
 
 
 def apply_shear(image, level=15):
+    """
+    Apply vertical and horizontal shear transformations to an image.
+
+    Args:
+    image (PIL.Image): Input image to be sheared.
+    level (int): Shear level, determines the intensity of the shear transformation.
+
+    Returns:
+    np.ndarray: Sheared image as a NumPy array.
+    """
     array_inputs = tf.keras.preprocessing.image.img_to_array(image)
 
     # Apply vertical shear
@@ -32,10 +42,25 @@ def apply_shear(image, level=15):
 
 
 def augment_image(image):
+    """
+    Apply various augmentations to an image including Gaussian blur, brightness, contrast, hue adjustment, and shear.
+
+    Args:
+    image (np.ndarray): Input image to be augmented.
+
+    Returns:
+    np.ndarray: Augmented image.
+    """
     kernals = [1, 3, 5, 9, 11, 13, 15]
     random_kernal = random.choice(kernals)
+
+    # Apply Gaussian blur with a random kernel size
     image = cv2.GaussianBlur(image, (random_kernal, random_kernal), 0)
+
+    # Apply random brightness adjustment
     aug_image = tf.image.random_brightness(image, 0.6)
+
+    # Apply random contrast adjustment
     aug_image = tf.image.random_contrast(aug_image, 0.7, 1.4)
     aug_image = tf.image.convert_image_dtype(aug_image, tf.float32)
 
@@ -49,12 +74,23 @@ def augment_image(image):
     # Recombine the adjusted RGB image with the Alpha channel
     aug_image = tf.concat([rgb_image, alpha_channel], axis=-1)
 
+    # Apply shear transformations
     aug_image = apply_shear(aug_image)
 
     return aug_image
 
 
 def plot_bounding_box(image_path, label_path):
+    """
+    Plot bounding box on the image based on coordinates specified in a label file.
+
+    Args:
+    image_path (str): Path to the input image.
+    label_path (str): Path to the label file containing bounding box coordinates.
+
+    Returns:
+    None
+    """
     # Load the image
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB (matplotlib expects RGB format)

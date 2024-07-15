@@ -25,8 +25,8 @@ def change_yolo_classes(directory, new_class):
             with open(file_path, 'w') as file:
                 file.write('\n'.join(new_lines))
 
-
-# Example usage:
-directory_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\tools\coco_tools\coco_selected_annotations_traffic_light'
-new_class_id = 9
-change_yolo_classes(directory_path, new_class_id)
+if __name__ == '__main__':
+    # Example usage:
+    directory_path = r'C:\Users\Benedikt Seeger\PycharmProjects\BV2-project\tools\coco_tools\coco_selected_annotations_traffic_light'
+    new_class_id = 9
+    change_yolo_classes(directory_path, new_class_id)
