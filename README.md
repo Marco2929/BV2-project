@@ -50,7 +50,7 @@ These techniques improve the model’s ability to generalize in real-world drivi
 *Insert below an example training image with multiple randomly placed, augmented signs.*
 
 ```markdown
-![Synthetic Sample](content/example_synthetic_augmented.png)
+![Synthetic Sample](data/example_synthetic_augmented.png)
 ```
 
 ---
@@ -66,7 +66,7 @@ These techniques improve the model’s ability to generalize in real-world drivi
 *Insert your F1-confidence curve image here*
 
 ```markdown
-![F1 Curve](content/f1_curve.png)
+![F1 Curve](data/f1_curve.png)
 ```
 
 ---
@@ -83,7 +83,7 @@ The detection pipeline includes:
 
 ##### 🖼️ Example: Inference Output  
 ```markdown
-![Inference Example](content/inference_output.png)
+![Inference Example](data/inference_output.png)
 ```
 
 ---
