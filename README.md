@@ -1,5 +1,5 @@
 ## 🚦 Traffic Sign Recognition with YOLOv8  
-**Computer Vision 2 – Heilbronn University of Applied Sciences (Summer Semester 2024)**  
+**Computer Vision 2 – Heilbronn University (Summer Semester 2024)**  
 **Marco Menner & Benedikt Seeger**  
 **Degree Program:** Mechatronics and Robotics  
 
