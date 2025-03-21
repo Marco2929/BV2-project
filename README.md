@@ -48,7 +48,7 @@ Each sign undergoes random augmentation steps before being composited into the b
 These techniques improve the model’s ability to generalize in real-world driving conditions.
 
 ##### 📸 Example: Synthetic Augmented Image  
-![Synthetic Sample](data/example_synthetic_augmented.png)
+![Synthetic Sample](data/example_sythetic_augmented.jpg)
 
 ---
 
@@ -60,7 +60,7 @@ These techniques improve the model’s ability to generalize in real-world drivi
 - **Final detection time**: **~0.06–0.09 seconds/frame**
 
 ##### 📈 F1-Score Confidence Curve  
-![F1 Curve](data/f1_curve.png)
+<img src="data/f1_curve.png" alt="F1 Curve" width="400"/>
 
 ---
 
@@ -74,7 +74,7 @@ The detection pipeline includes:
 - **Overlay interface** for sign visualization  
 
 ##### 🖼️ Example: Inference Output  
-![Inference Example](data/inference_output.png)
+![Inference Example](data/overlay_mockup.png)
 
 ---
 
@@ -103,5 +103,3 @@ The detection pipeline includes:
 - Detect traffic lights and state changes  
 - Define **Regions of Interest (ROIs)** to show only relevant signs (e.g., for turns)  
 - Port inference logic to **C++** for embedded, high-speed deployment  
-
----
